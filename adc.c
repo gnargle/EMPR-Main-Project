@@ -8,7 +8,7 @@
 #define adcfunc 1
 #define adcport 0
 #define adcpin1 23 // mbed out pin is 15
-#define adcpin2 24
+#define adcpin2 24 // mbed out pin is 16
 
 void adc_init(void);
 
@@ -18,9 +18,11 @@ void adc_init(void){
     PINSEL_CFG_Type PinCfg;
     pin_settings(PinCfg, adcfunc, 0, 0, adcport, adcpin1);
     pin_settings(PinCfg, adcfunc, 0, 0, adcport, adcpin2);
-    ADC_Init((LPC_ADC_TypeDef *)LPC_ADC, 5);
+    ADC_Init((LPC_ADC_TypeDef *)LPC_ADC, 20);
     ADC_ChannelCmd((LPC_ADC_TypeDef *)LPC_ADC, 0, ENABLE);
+    ADC_ChannelCmd((LPC_ADC_TypeDef *)LPC_ADC, 1, ENABLE);
     ADC_IntConfig((LPC_ADC_TypeDef *) LPC_ADC, ADC_ADINTEN0, SET);
+    ADC_IntConfig((LPC_ADC_TypeDef *) LPC_ADC, ADC_ADINTEN1, SET);
 }
 
 int adc_is_busy(int channel){
