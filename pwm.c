@@ -8,14 +8,12 @@
 #define pwmport 2
 #define pwmpin 1
 #define pwmfunc 1
+#define pwmpin2 2
 
-
-void pwm_update_high (void);
-void pwm_update_low (void); 
-
-void pwm_init(void){
+void pwm_init(int channel){
     PINSEL_CFG_Type PinCfg;
     PWM_TIMERCFG_Type PWMCfg;
+
     PWM_MATCHCFG_Type PWMMatchCfg;
 
     PWMCfg.PrescaleOption = PWM_TIMER_PRESCALE_USVAL;
@@ -23,38 +21,46 @@ void pwm_init(void){
 
     PWM_Init((LPC_PWM_TypeDef *) LPC_PWM1, PWM_MODE_TIMER, &PWMCfg);
 
-    pin_settings(PinCfg, pwmfunc, 0, 0, pwmport, pwmpin);
+    pin_settings(PinCfg, pwmfunc, 0, 0, pwmport, channel-1);
+    pin_settings(PinCfg, pwmfunc, 0, 0, pwmport, channel);
 
     PWM_MatchUpdate((LPC_PWM_TypeDef *) LPC_PWM1,0,256,PWM_MATCH_UPDATE_NOW);
+    
 
     PWMMatchCfg.IntOnMatch = DISABLE;
     PWMMatchCfg.MatchChannel = 0;
     PWMMatchCfg.ResetOnMatch = ENABLE;
     PWMMatchCfg.StopOnMatch = DISABLE;
+
     PWM_ConfigMatch((LPC_PWM_TypeDef *) LPC_PWM1, &PWMMatchCfg);
+    
 
-    PWM_ChannelConfig((LPC_PWM_TypeDef *) LPC_PWM1, 2, PWM_CHANNEL_SINGLE_EDGE);
+    PWM_ChannelConfig((LPC_PWM_TypeDef *) LPC_PWM1, channel, PWM_CHANNEL_SINGLE_EDGE);
+    PWM_ChannelConfig((LPC_PWM_TypeDef *) LPC_PWM1, channel+1, PWM_CHANNEL_SINGLE_EDGE);
 
-    PWM_MatchUpdate((LPC_PWM_TypeDef *) LPC_PWM1,2,0,PWM_MATCH_UPDATE_NOW);
+    PWM_MatchUpdate((LPC_PWM_TypeDef *) LPC_PWM1,channel,0,PWM_MATCH_UPDATE_NOW);
+    PWM_MatchUpdate((LPC_PWM_TypeDef *) LPC_PWM1,channel+1,0,PWM_MATCH_UPDATE_NOW);
+    
     PWMMatchCfg.IntOnMatch = DISABLE;
-    PWMMatchCfg.MatchChannel = 2;
+    PWMMatchCfg.MatchChannel = channel;
     PWMMatchCfg.ResetOnMatch = DISABLE;
     PWMMatchCfg.StopOnMatch = DISABLE;
     PWM_ConfigMatch((LPC_PWM_TypeDef *) LPC_PWM1, &PWMMatchCfg);
-    PWM_ChannelCmd((LPC_PWM_TypeDef *) LPC_PWM1, 2, ENABLE);
+    PWM_ChannelCmd((LPC_PWM_TypeDef *) LPC_PWM1, channel, ENABLE);
+
+    PWMMatchCfg.IntOnMatch = DISABLE;
+    PWMMatchCfg.MatchChannel = channel+1;
+    PWMMatchCfg.ResetOnMatch = DISABLE;
+    PWMMatchCfg.StopOnMatch = DISABLE;
+    PWM_ConfigMatch((LPC_PWM_TypeDef *) LPC_PWM1, &PWMMatchCfg);
+    PWM_ChannelCmd((LPC_PWM_TypeDef *) LPC_PWM1, channel+1, ENABLE);
 
     PWM_ResetCounter((LPC_PWM_TypeDef *)LPC_PWM1);
-    PWM_CounterCmd((LPC_PWM_TypeDef *)LPC_PWM1, ENABLE);
-    PWM_Cmd((LPC_PWM_TypeDef *) LPC_PWM1, ENABLE);    
+    PWM_CounterCmd((LPC_PWM_TypeDef *)LPC_PWM1, ENABLE);    
 }
 
-
-void pwm_update_high (void){
-    PWM_MatchUpdate((LPC_PWM_TypeDef *) LPC_PWM1,2,0,PWM_MATCH_UPDATE_NOW);
-    
+void pwm_enable(void){
+    PWM_Cmd((LPC_PWM_TypeDef *) LPC_PWM1, ENABLE);
 }
 
-void pwm_update_low (void){
-    PWM_MatchUpdate((LPC_PWM_TypeDef *) LPC_PWM1,2,256,PWM_MATCH_UPDATE_NOW);
-}
 
