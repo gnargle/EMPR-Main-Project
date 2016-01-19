@@ -3,9 +3,32 @@
 #include "lpc17xx_timer.h"
 
 void pinsetup(void);
+int rising(int);
+int falling(int);
+void timer_init(void);
+
+void ultrasound(void){
+  pinsetup();
+  timer_init();
+  int x=0;
+  int y=0;
+  while (1){
+    if (TIM_GetIntCaptureStatus(LPC_TIM3, TIM_CR0_INT)) {
+      rising(x);
+      if (TIM_GetIntCaptureStatus(LPC_TIM3, TIM_CR1_INT)) {
+        falling(y);
+        int length = y - x;
+        char port[10] = "";
+        sprintf(port, "%i", length);
+        write_usb_serial_blocking(port, 10);
+        write_usb_serial_blocking("\n\r", 2);
+        TIM_ResetCounter(LPC_TIM3);
+      }
+    }
+  }
+}
 
 void timer_init(void){
-  pinsetup();
   TIM_TIMERCFG_Type TIMERCfg;
   TIM_CAPTURECFG_Type RISINGCfg;
   TIM_CAPTURECFG_Type FALLINGCfg;
@@ -44,19 +67,15 @@ void timer_init(void){
   }
   
 int rising(x){
-  if (TIM_GetIntCaptureStatus(LPC_TIM3, TIM_CR0_INT)) {
-    x = TIM_GetCaptureValue(LPC_TIM3, TIM_COUNTER_INCAP0);
-    TIM_ClearIntCapturePending(LPC_TIM3, TIM_CR0_INT);
-    return x;
-    }
+  x = TIM_GetCaptureValue(LPC_TIM3, TIM_COUNTER_INCAP0);
+  TIM_ClearIntCapturePending(LPC_TIM3, TIM_CR0_INT);
+  return x;
   }
   
 int falling(y){
-  if (TIM_GetIntCaptureStatus(LPC_TIM3, TIM_CR1_INT)) {
-    y = TIM_GetCaptureValue(LPC_TIM3, TIM_COUNTER_INCAP1);
-    TIM_ClearIntCapturePending(LPC_TIM3, TIM_CR1_INT);
-    return y;
-    }
+  y = TIM_GetCaptureValue(LPC_TIM3, TIM_COUNTER_INCAP1);
+  TIM_ClearIntCapturePending(LPC_TIM3, TIM_CR1_INT);
+  return y;
   }
       
 void pinsetup(void){
