@@ -3,6 +3,7 @@
 #include "keypad.c"
 #include "adc.c"
 #include "main.h"
+#include "timer.c"
 
 #define usedi2c LPC_I2C1
 #define i2cfunc 3
@@ -34,6 +35,7 @@ int main(void){
     calibration_mode();
     while(1){
         //get_data_and_print();
+        ultrasound();
         a = read_keypad(33);
         previous = keypad_check(a, previous);
         switch(mode){
