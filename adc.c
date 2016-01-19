@@ -1,8 +1,8 @@
 #include "lpc17xx_adc.h"
 #include "lpc17xx_pinsel.h"
 #include "lpc_types.h"
-#include "serial.h"
-#include "serial.c"
+//#include "serial.h"
+//#include "serial.c"
 
 
 #define adcfunc 1

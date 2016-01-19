@@ -9,7 +9,7 @@
 
 #define usedi2c LPC_I2C1
 
-void init_keypad(int i2c_port){
+void keypad_init(int i2c_port){
     int init[1] = {0xFF};
     I2C_M_SETUP_Type TransferCfg;
     TransferCfg = setup_TransferCfg(TransferCfg, i2c_port, init, 1, NULL, 0);
@@ -47,7 +47,7 @@ unsigned char read_keypad_main(int i2c_port){
 
     uint8_t i;
     for (i = 0; i < 4; i++){
-        init_keypad(i2c_port);
+        keypad_init(i2c_port);
         write_keyboard_pin(i, i2c_port);
         unsigned char sendbuff[1] = {0xDF};
         unsigned char receivebuff[1];

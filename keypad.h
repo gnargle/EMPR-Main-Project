@@ -1,4 +1,4 @@
-void init_keypad(int i2c_port);
+void keypad_init(int i2c_port);
 
 void write_keyboard_pin(uint8_t pin, int i2c_port);
 

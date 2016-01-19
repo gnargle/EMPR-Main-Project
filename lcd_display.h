@@ -1,4 +1,4 @@
-void init_display(int i2c_port);
+void display_init(int i2c_port);
 
 void clear_display(int i2c_port);
 

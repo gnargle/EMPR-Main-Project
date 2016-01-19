@@ -26,7 +26,7 @@ uint8_t alloc_lcd_addr(uint8_t addr, int i, char* str_to_write){
     }
 }
 
-void init_display(int i2c_port){
+void display_init(int i2c_port){
     /*while (read_busy_flag_display(i2c_port) == 1){
         // empty while just to check the flag
     }*/
