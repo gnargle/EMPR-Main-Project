@@ -4,8 +4,6 @@
 #include "lpc17xx_i2c.h"
 #include "lpc_types.h"
 #include "keypad.h"
-#include "serial.h"
-#include "serial.c"
 
 #define usedi2c LPC_I2C1
 

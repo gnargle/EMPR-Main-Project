@@ -2,8 +2,6 @@
 #include "lcd_display.c"
 #include "keypad.c"
 #include "adc.c"
-#include "main.h"
-#include "timer.c"
 
 #define usedi2c LPC_I2C1
 #define i2cfunc 3
@@ -17,13 +15,21 @@ int i;
 int mode;
 char a;
 char previous;
+char s[3] = "< 6";
+
+int scan_mode(void);
+int tape_measure_mode(void);
+int calibration_mode(void);
+char keypad_check(char x, char prev);
+
+void distanceircalc(void);
 
 int main(void){
     serial_init();
     rtc_init();
     pwm_init(2);
-    pwm_enable();
     adc_init();
+    distanceircalc();
 
     PINSEL_CFG_Type PinCfg;
     pin_settings(PinCfg, i2cfunc, 0, 0, i2cport, i2cpin1);
@@ -35,7 +41,7 @@ int main(void){
     calibration_mode();
     while(1){
         //get_data_and_print();
-        ultrasound();
+        //ultrasound();
         a = read_keypad(33);
         previous = keypad_check(a, previous);
         switch(mode){
@@ -49,7 +55,6 @@ int main(void){
 void RTC_IRQHandler(void){
     write_usb_serial_blocking("interrupt\n\r", 11);
     PWM_MatchUpdate((LPC_PWM_TypeDef *) LPC_PWM1,2,count,PWM_MATCH_UPDATE_NOW);
-    PWM_MatchUpdate((LPC_PWM_TypeDef *) LPC_PWM1,3,80,PWM_MATCH_UPDATE_NOW);
     count++;
     if (count >=31){
         count = 8;
@@ -57,7 +62,75 @@ void RTC_IRQHandler(void){
     RTC_SetTime((LPC_RTC_TypeDef *)LPC_RTC, RTC_TIMETYPE_SECOND, 0);
     RTC_SetAlarmTime((LPC_RTC_TypeDef *) LPC_RTC, RTC_TIMETYPE_SECOND, 1);
     RTC_ClearIntPending((LPC_RTC_TypeDef *)LPC_RTC, RTC_INT_ALARM);
-}//
+}
+void distanceircalc(void){
+	int x;
+	while(1){
+	x = get_data_and_print();
+	if (x <= 1250){
+        	x = (((5461/(get_data_and_print()-17))-2)*10);
+		//x = get_data_and_print();
+		}
+	else if (2400<= x && x <= 2420){
+			x = 7;
+		}
+	else if (2380<= x && x <= 2400){
+			x = 8;
+		}
+	else if (2200<= x && x <= 2380){
+			x = 9;
+		}
+	else if (1900<= x && x <= 2200){
+			x = 10;
+		}
+	else if (1800<= x && x <= 1900){
+			x = 11;
+		}
+	else if (1700<= x && x <= 1800){
+			x = 12;
+		}
+	else if (1600<= x && x <= 1700){
+			x = 13;
+		}
+	else if (1550<= x && x <= 1600){
+			x = 14;
+		}
+	else if (1500<= x && x <= 1550){
+			x = 15;
+		}
+	else if (1450<= x && x <= 1500){
+			x = 16;
+		}
+	else if (1400<= x && x <= 1450){
+			x = 17;
+		}
+	else if (1350<= x && x <= 1400){
+			x = 18;
+		}
+	else if (1300<= x && x <= 1350){
+			x = 19;
+		}
+	else if (1250<= x && x <= 1300){
+		x = 20;
+		}
+
+	//x = get_data_and_print();
+
+
+	if (x <= 2420){
+		char port[6] = "";
+    		sprintf(port, "%i", x);
+    		write_usb_serial_blocking(port, 6);
+    		write_usb_serial_blocking("\n\r", 2);
+		}
+	else {
+		char port[3] = "";
+    		sprintf(port, "%s", s);
+    		write_usb_serial_blocking(port, 3);
+    		write_usb_serial_blocking("\n\r", 2);
+	}
+    }
+}
 
 char keypad_check(char x, char prev){
     if (x == prev){
@@ -146,3 +219,5 @@ int scan_mode(void){
         return 2;
     }
 }
+
+
