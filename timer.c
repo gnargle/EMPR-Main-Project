@@ -1,6 +1,6 @@
-#include "lpc17xx_adc.h"
 #include "lpc17xx_pinsel.h"
 #include "lpc17xx_timer.h"
+//#include "serial.c"
 
 void pinsetup(void);
 int rising(int);
@@ -12,19 +12,27 @@ void ultrasound(void){
   timer_init();
   int x=0;
   int y=0;
+  write_usb_serial_blocking("c\n\r", 4);
   while (1){
-    if (TIM_GetIntCaptureStatus(LPC_TIM3, TIM_CR0_INT)) {
+    write_usb_serial_blocking("d\n\r", 4);
+    if (TIM_GetIntCaptureStatus(LPC_TIM3, TIM_CR0_INT) == SET) { //works with RESET (which means it's not detecting an interupt but it should be)
+      write_usb_serial_blocking("e\n\r", 4);
       rising(x);
-      if (TIM_GetIntCaptureStatus(LPC_TIM3, TIM_CR1_INT)) {
-        falling(y);
-        int length = y - x;
-        char port[10] = "";
-        sprintf(port, "%i", length);
-        write_usb_serial_blocking(port, 10);
-        write_usb_serial_blocking("\n\r", 2);
-        TIM_ResetCounter(LPC_TIM3);
+      int a = 0;
+      while (a==0){
+        if (TIM_GetIntCaptureStatus(LPC_TIM3, TIM_CR1_INT) == SET) {
+            falling(y);
+            int length = y - x;
+            char port[10] = "";
+            sprintf(port, "%i", length);
+            write_usb_serial_blocking(port, 10);
+            write_usb_serial_blocking("\n\r", 2);
+            TIM_ResetCounter(LPC_TIM3);
+            a = 1;
+        }
       }
     }
+    //write_usb_serial_blocking("f\n\r", 4);
   }
 }
 
@@ -36,7 +44,7 @@ void timer_init(void){
   TIM_MATCHCFG_Type FALLINGMatch;
   
   TIMERCfg.PrescaleOption = TIM_PRESCALE_USVAL;
-  TIM_Init(LPC_TIM3, &TIM_TIMER_MODE);
+  TIM_Init(LPC_TIM3, TIM_TIMER_MODE, &TIMERCfg);
   
   RISINGCfg.CaptureChannel = 0;
   RISINGCfg.FallingEdge = DISABLE;
@@ -62,7 +70,7 @@ void timer_init(void){
   TIM_ConfigMatch(LPC_TIM3, &RISINGMatch);
   TIM_ConfigMatch(LPC_TIM3, &FALLINGMatch); */
   
-  TIM_Cmd(LPC_TIM0, ENABLE);
+  TIM_Cmd(LPC_TIM3, ENABLE);
   
   }
   
