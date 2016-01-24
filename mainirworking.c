@@ -54,7 +54,7 @@ int main(void){
             case 0: mode = calibration_mode(); break;
             case 1: mode = tape_measure_mode(); break;
             case 2: mode = scan_mode(); break;
-        // Depending on keypad input will determine whether or not to enter one of the modes.
+        // Depending on keypad input will determine whether or not to enter one of the modes. 
         }
     }
 }
