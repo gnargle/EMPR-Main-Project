@@ -1,7 +1,7 @@
-#include "rtc.c"
-#include "lcd_display.c"
-#include "keypad.c"
-#include "adc.c"
+#include "rtc.c" 		//Includes: "pinsel.h", "types.h", "rtc.h" & "pwm.c"
+#include "lcd_display.c" 	//Includes: "i2c.h", "lcd_display.h","types.h","transfer_cfg.h" & "transfer_cfg.c"
+#include "keypad.c" 		//Includes: "i2c.h","types.h" & "keypad.h"
+#include "adc.c"		//Includes: "adc.h", "pinsel.h", "types.h"
 
 #define usedi2c LPC_I2C1
 #define i2cfunc 3
@@ -186,7 +186,7 @@ int calibration_mode(void){
         }
         else{
             return 0;
-        //Placeholder for calibration mode
+        //Placeholder for calibration mode (???)
         }
     }
 }
