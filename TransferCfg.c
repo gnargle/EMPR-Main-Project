@@ -8,6 +8,7 @@ I2C_M_SETUP_Type setup_TransferCfg(I2C_M_SETUP_Type TransferCfg, int addr, unsig
     TransferCfg.rx_data = rdptr;
     TransferCfg.rx_length = rdlength;
     return TransferCfg;
+    //Determines settings regarding sending or recieving down i2c bus (???)
 }
 
 I2C_M_SETUP_Type change_write_data(I2C_M_SETUP_Type TransferCfg, 
@@ -15,4 +16,5 @@ I2C_M_SETUP_Type change_write_data(I2C_M_SETUP_Type TransferCfg,
     ptr[1] = data;
     TransferCfg.tx_data = ptr;
     return TransferCfg;
+    // (???)
 }
