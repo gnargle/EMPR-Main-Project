@@ -1,17 +1,18 @@
 #include "lpc17xx_pinsel.h"
 #include "lpc_types.h"
 #include "lpc17xx_rtc.h"
-#include "pwm.c"
+#include "pwm.c" //Includes: "pwm.h", "pinsel.h" & "types.h".
 
 #define rtcport 0
 #define rtcfunc 0
 #define rtcpin 16
-
+//defines values for port no. function no. and pin no.
 void rtc_init(void);
 
 //RTC_IRQHandler (void);
 
 void rtc_init(void){
+    //initialises the real time clock with regards to the values defined above.
     PINSEL_CFG_Type PinCfg;
     pin_settings(PinCfg, rtcfunc, 0, 0, rtcport, rtcpin);
     RTC_Init((LPC_RTC_TypeDef *) LPC_RTC);
