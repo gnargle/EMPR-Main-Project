@@ -15,6 +15,7 @@ void adc_init(void);
 int adc_is_busy(int channel);
 
 void adc_init(void){
+    //initialises ADC with regards to the pins setup via pinsettings
     PINSEL_CFG_Type PinCfg;
     pin_settings(PinCfg, adcfunc, 0, 0, adcport, adcpin1);
     pin_settings(PinCfg, adcfunc, 0, 0, adcport, adcpin2);
@@ -34,6 +35,7 @@ int adc_get_data(int channel){
 }
 
 uint16_t get_data_and_print(void){
+    //if the adc is not busy then write to the terminal teh values obtained from the adc.
     while (adc_is_busy(0)){
         continue;
     }
@@ -47,6 +49,7 @@ uint16_t get_data_and_print(void){
 }
 
 void ADC_IRQHandler(void){
+    //(???)
     uint16_t x = adc_get_data(0);
     char port[4] = "";
     sprintf(port, "%i", x);
