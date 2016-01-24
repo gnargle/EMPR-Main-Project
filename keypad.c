@@ -8,6 +8,7 @@
 #define usedi2c LPC_I2C1
 
 void keypad_init(int i2c_port){
+    //initialises the keypad on port specified by i2c_port.
     int init[1] = {0xFF};
     I2C_M_SETUP_Type TransferCfg;
     TransferCfg = setup_TransferCfg(TransferCfg, i2c_port, init, 1, NULL, 0);
@@ -15,6 +16,7 @@ void keypad_init(int i2c_port){
 }
 
 void write_keyboard_pin(uint8_t pin, int i2c_port){
+    //determines key pressed (???)
     if (pin == 0){
         int buff[1] = {0xEF};
         I2C_M_SETUP_Type TransferCfg;
@@ -42,7 +44,7 @@ void write_keyboard_pin(uint8_t pin, int i2c_port){
 }
 
 unsigned char read_keypad_main(int i2c_port){
-
+    //Main function that reads from the keypad by calling "write keyboard_pin" and then... (???)
     uint8_t i;
     for (i = 0; i < 4; i++){
         keypad_init(i2c_port);
@@ -74,6 +76,7 @@ char read_keypad(int i2c_port){
 }
 
 char determine_key_pressed(unsigned char retint){
+    //lookup values for each potential value given by read keypad.
     switch (retint){
         case 0x77: return '1';
         case 0xB7: return '2';
