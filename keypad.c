@@ -97,3 +97,23 @@ char determine_key_pressed(unsigned char retint){
         default: return 'Z';
     }
 }
+
+char keypad_check(char x, char prev){
+    if (x == prev){
+        return prev = x;
+    }
+    else if (x != 'Z' && x != prev){
+        prev = x;
+        char out[1];
+        sprintf(out, "%c", x);
+        write_usb_serial_blocking(out, 1);
+        write_usb_serial_blocking("\n\r", 2);
+        return prev;
+    }
+    else if (x == 'Z' && prev != 'Z'){
+        return prev = 'Z';
+    }
+    else{
+        return prev == "Z";
+    }
+}

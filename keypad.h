@@ -7,3 +7,5 @@ unsigned char read_keypad_main(int i2c_port);
 char read_keypad(int i2c_port);
 
 char determine_key_pressed(unsigned char retint);
+
+char keypad_check(char x, char prev);
