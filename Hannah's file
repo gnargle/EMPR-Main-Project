@@ -3,3 +3,5 @@ git clone https://github.com/gnargle/EMPR-Main-Project.git
 
 
 git commit -am ""
+
+screen /dev/ttyACM0
