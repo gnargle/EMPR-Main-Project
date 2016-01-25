@@ -44,7 +44,7 @@ void display_init(int i2c_port){
     clear_display(i2c_port);
 }
 
-void clear_display(i2c_port){
+void clear_display(int i2c_port){
     //Replaces all values on the lcd display with " " and resets the typing location back to start.
     uint8_t addr = 0x80;
     int i;

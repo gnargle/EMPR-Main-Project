@@ -31,6 +31,7 @@ int main(void){
     I2C_Cmd(usedi2c, ENABLE);
     display_init(59);
     keypad_init(33);
+    //lrg_screen_init(39);
     calibration_mode(previous);
     while(1){
         //get_data_and_print();
@@ -41,12 +42,12 @@ int main(void){
             case 0: mode = calibration_mode(previous); break;
             case 1: mode = tape_measure_mode(previous); break;
             case 2: mode = scan_mode(previous); break;
+            case 3: mode = multi_view_mode(previous); break;
         }
     }
 }
 
 void RTC_IRQHandler(void){
-    write_usb_serial_blocking("interrupt\n\r", 11);
     PWM_MatchUpdate((LPC_PWM_TypeDef *) LPC_PWM1,2,count,PWM_MATCH_UPDATE_NOW);
     count++;
     if (count >=31){
