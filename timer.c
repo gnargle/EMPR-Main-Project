@@ -45,6 +45,8 @@ void timer_init(void){
   
   TIMERCfg.PrescaleOption = TIM_PRESCALE_USVAL;
   TIM_Init(LPC_TIM3, TIM_TIMER_MODE, &TIMERCfg);
+
+  TIM_ConfigStructInit(TIM_TIMER_MODE, &TIMERCfg);
   
   RISINGCfg.CaptureChannel = 0;
   RISINGCfg.FallingEdge = DISABLE;
