@@ -56,8 +56,3 @@ void RTC_IRQHandler(void){
     RTC_SetAlarmTime((LPC_RTC_TypeDef *) LPC_RTC, RTC_TIMETYPE_SECOND, 1);
     RTC_ClearIntPending((LPC_RTC_TypeDef *)LPC_RTC, RTC_INT_ALARM);
 }
-
-
-
-
-
