@@ -22,7 +22,7 @@ void rtc_init(void){
     RTC_CntIncrIntConfig((LPC_RTC_TypeDef *)LPC_RTC, RTC_TIMETYPE_SECOND, DISABLE);
     RTC_AlarmIntConfig((LPC_RTC_TypeDef *) LPC_RTC, RTC_TIMETYPE_SECOND, ENABLE);
     RTC_ClearIntPending((LPC_RTC_TypeDef *)LPC_RTC, RTC_INT_ALARM);
-    RTC_SetAlarmTime((LPC_RTC_TypeDef *) LPC_RTC, RTC_TIMETYPE_SECOND, 5);
+    //RTC_SetAlarmTime((LPC_RTC_TypeDef *) LPC_RTC, RTC_TIMETYPE_SECOND, 5);
     RTC_Cmd((LPC_RTC_TypeDef *) LPC_RTC, ENABLE);
     NVIC_EnableIRQ(RTC_IRQn);
 }

@@ -1,8 +1,8 @@
+#include "adc.c"
 #include "rtc.c"
 #include "lcd_display.c"
 #include "keypad.c"
-#include "adc.c"
-
+//NOBODY TOUCH MY INCLUDES THEY ARE DELICATE
 #define usedi2c LPC_I2C1
 #define i2cfunc 3
 #define i2cport 0
@@ -169,6 +169,8 @@ int calibration_mode(void){
             return 2;
         }
         else{
+            RTC_SetAlarmTime((LPC_RTC_TypeDef *) LPC_RTC, RTC_TIMETYPE_SECOND, 0);
+            PWM_MatchUpdate((LPC_PWM_TypeDef *) LPC_PWM1,2,17,PWM_MATCH_UPDATE_NOW);
             return 0;
         }
     }
@@ -193,6 +195,8 @@ int tape_measure_mode(void){
         return 2;
     }
     else{
+        RTC_SetAlarmTime((LPC_RTC_TypeDef *) LPC_RTC, RTC_TIMETYPE_SECOND, 0);
+        PWM_MatchUpdate((LPC_PWM_TypeDef *) LPC_PWM1,2,count,PWM_MATCH_UPDATE_NOW);
         return 1;
     }
 }
@@ -216,6 +220,7 @@ int scan_mode(void){
         return 2;
     }
     else{
+        RTC_SetAlarmTime((LPC_RTC_TypeDef *) LPC_RTC, RTC_TIMETYPE_SECOND, 1);
         return 2;
     }
 }
