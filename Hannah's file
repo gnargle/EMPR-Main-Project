@@ -1,0 +1,5 @@
+git pull https://github.com/gnargle/EMPR-Main-Project.git
+git clone https://github.com/gnargle/EMPR-Main-Project.git
+
+
+git commit -am ""
