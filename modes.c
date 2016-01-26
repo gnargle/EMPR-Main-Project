@@ -45,6 +45,10 @@ int calibration_mode(char previous){
 
 int tape_measure_mode(char previous){
     write_usb_serial_blocking("tape measure\n\r", 14);
+
+    lcd_display_mode("tape measure");
+    
+    //DISPLAYS IR VALUE ON LCD SECOND LINE
     int measure = distanceircalc();
     char *measure_out;
     if (measure == -1){
@@ -53,11 +57,13 @@ int tape_measure_mode(char previous){
     else{
         sprintf(measure_out, "%i", measure);
     }
-    int addr = 0x80;
+    int addr2 = 0x80 + 16;
     int i;
     for (i = 0; i < strlen(measure_out); i++){
-        addr = alloc_lcd_addr(addr, i, measure_out);
+        addr2 = alloc_lcd_addr(addr2, i, measure_out);
     }
+    //END OF LCD DISPLAYING
+
     char a = read_keypad(33);
     if (a == 'A'&& previous != a){
         char a = read_keypad(33);
@@ -146,6 +152,14 @@ int multi_view_mode(char previous){
         RTC_AlarmIntConfig((LPC_RTC_TypeDef *) LPC_RTC, RTC_TIMETYPE_SECOND, ENABLE);
         RTC_SetAlarmTime((LPC_RTC_TypeDef *) LPC_RTC, RTC_TIMETYPE_SECOND, 1);
         return 3;
+    }
+}
+
+void lcd_display_mode(char* currentmode){
+    int addr = 0x80;
+    int i;
+    for (i = 0; i < strlen(currentmode); i++){
+        addr = alloc_lcd_addr(addr, i, currentmode);
     }
 }
 
