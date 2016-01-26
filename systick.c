@@ -2,8 +2,8 @@
 #include "lpc_types.h"
 
 void systick_init(void){
-    SYSTICK_Cmd(ENABLE);
     SYSTICK_IntCmd(ENABLE);
-    SYSTICK_InternalInit(15);
+    SYSTICK_InternalInit(100);
+    SYSTICK_Cmd(ENABLE);
 }
 

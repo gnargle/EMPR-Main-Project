@@ -47,6 +47,7 @@ int main(void){
 }
 
 void RTC_IRQHandler(void){
+    write_usb_serial_blocking("interrupt\n\r", 11);
     PWM_MatchUpdate((LPC_PWM_TypeDef *) LPC_PWM1,2,count,PWM_MATCH_UPDATE_NOW);
     count++;
     if (count >=31){

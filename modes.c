@@ -11,7 +11,7 @@ int calibration_mode(char previous);
 
 
 int calibration_mode(char previous){
-    write_usb_serial_blocking("calibrate\n\r", 11);
+    lcd_display_mode("Calibrate");
     while(1){
         char a = read_keypad(33);
     if (a == 'A'&& previous != a){
@@ -20,16 +20,19 @@ int calibration_mode(char previous){
         return 0;
     }
     else if (a == 'B'&& previous != a){
+        clear_display(59);
         char a = read_keypad(33);
         previous = keypad_check(a, previous);
         return 1;
     }
     else if (a == 'C'&& previous != a){
+        clear_display(59);
         char a = read_keypad(33);
         previous = keypad_check(a, previous);
         return 2;
     }
     else if (a == 'D'&& previous != a){
+        clear_display(59);
         char a = read_keypad(33);
         previous = keypad_check(a, previous);
         return 3;
@@ -44,9 +47,7 @@ int calibration_mode(char previous){
 }
 
 int tape_measure_mode(char previous){
-    write_usb_serial_blocking("tape measure\n\r", 14);
-
-    lcd_display_mode("tape measure");
+    lcd_display_mode("Tape Measure");
     
     //DISPLAYS IR VALUE ON LCD SECOND LINE
     int measure = distanceircalc();
@@ -66,6 +67,7 @@ int tape_measure_mode(char previous){
 
     char a = read_keypad(33);
     if (a == 'A'&& previous != a){
+        clear_display(59);
         char a = read_keypad(33);
         previous = keypad_check(a, previous);
         return 0;
@@ -76,11 +78,13 @@ int tape_measure_mode(char previous){
         return 1;
     }
     else if (a == 'C'&& previous != a){
+        clear_display(59);
         char a = read_keypad(33);
         previous = keypad_check(a, previous);
         return 2;
     }
     else if (a == 'D'&& previous != a){
+        clear_display(59);
         char a = read_keypad(33);
         previous = keypad_check(a, previous);
         return 3;
@@ -94,14 +98,16 @@ int tape_measure_mode(char previous){
 }
 
 int scan_mode(char previous){
-    write_usb_serial_blocking("scan\n\r", 6);
+    lcd_display_mode("Scan");
     char a = read_keypad(33);
     if (a == 'A'&& previous != a){
+        clear_display(59);
         char a = read_keypad(33);
         previous = keypad_check(a, previous);
         return 0;
     }
     else if (a == 'B'&& previous != a){
+        clear_display(59);
         char a = read_keypad(33);
         previous = keypad_check(a, previous);
         return 1;
@@ -112,6 +118,7 @@ int scan_mode(char previous){
         return 2;
     }
     else if (a == 'D'&& previous != a){
+        clear_display(59);
         char a = read_keypad(33);
         previous = keypad_check(a, previous);
         return 3;
@@ -125,19 +132,22 @@ int scan_mode(char previous){
 }
 
 int multi_view_mode(char previous){
-    write_usb_serial_blocking("multi view\n\r", 12);
+    lcd_display_mode("Multi View");
     char a = read_keypad(33);
     if (a == 'A'&& previous != a){
+        clear_display(59);
         char a = read_keypad(33);
         previous = keypad_check(a, previous);
         return 0;
     }
     else if (a == 'B'&& previous != a){
+        clear_display(59);
         char a = read_keypad(33);
         previous = keypad_check(a, previous);
         return 1;
     }
     else if (a == 'C'&& previous != a){
+        clear_display(59);
         char a = read_keypad(33);
         previous = keypad_check(a, previous);
         return 2;
