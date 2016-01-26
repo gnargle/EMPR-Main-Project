@@ -2,6 +2,7 @@
 #include "keypad.c"
 #include "IR.c"
 #include "rtc.c"
+#include <string.h>
 //#include "largelcd.c"
 
 int scan_mode(char previous);
@@ -44,6 +45,19 @@ int calibration_mode(char previous){
 
 int tape_measure_mode(char previous){
     write_usb_serial_blocking("tape measure\n\r", 14);
+    int measure = distanceircalc();
+    char *measure_out;
+    if (measure == -1){
+        measure_out = "<6";
+    }
+    else{
+        sprintf(measure_out, "%i", measure);
+    }
+    int addr = 0x80;
+    int i;
+    for (i = 0; i < strlen(measure_out); i++){
+        addr = alloc_lcd_addr(addr, i, measure_out);
+    }
     char a = read_keypad(33);
     if (a == 'A'&& previous != a){
         char a = read_keypad(33);

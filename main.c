@@ -16,8 +16,6 @@ char a;
 char previous;
 
 
-
-
 int main(void){
     serial_init();
     rtc_init();

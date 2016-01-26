@@ -1,14 +1,14 @@
 #include "adc.c"
 
-void distanceircalc(void);
+int distanceircalc(void);
 
 char s[3] = "< 6";
 
-void distanceircalc(void){
+int distanceircalc(void){
     int x;
-    x = get_data_and_print();
+    x = get_data();
     if (x <= 1250){
-            x = (((5461/(get_data_and_print()-17))-2)*10);
+            x = (((5461/(get_data()-17))-2)*10);
         //x = get_data_and_print();
         }
     else if (2400<= x && x <= 2420){
@@ -62,6 +62,7 @@ void distanceircalc(void){
             sprintf(port, "%i", x);
             write_usb_serial_blocking(port, 6);
             write_usb_serial_blocking("\n\r", 2);
+            return -1;
         }
     else {
         char port[3] = "";
@@ -69,4 +70,5 @@ void distanceircalc(void){
             write_usb_serial_blocking(port, 3);
             write_usb_serial_blocking("\n\r", 2);
     }
+    return x;
 }
