@@ -17,6 +17,7 @@ char previous;
 
 
 
+
 int main(void){
     serial_init();
     rtc_init();
@@ -37,7 +38,7 @@ int main(void){
         //get_data_and_print();
         //ultrasound();
         a = read_keypad(33);
-        previous = keypad_check(a, previous);
+        //previous = keypad_check(a, previous);
         switch(mode){
             case 0: mode = calibration_mode(previous); break;
             case 1: mode = tape_measure_mode(previous); break;

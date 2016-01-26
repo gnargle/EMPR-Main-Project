@@ -1,7 +1,7 @@
-#include "rtc.c"
 #include "lcd_display.c"
 #include "keypad.c"
 #include "IR.c"
+#include "rtc.c"
 //#include "largelcd.c"
 
 int scan_mode(char previous);
