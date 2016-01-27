@@ -6,13 +6,9 @@
 #define i2cport 0
 #define i2cpin1 0
 #define i2cpin2 1
-
-int count = 8;
+//
 int count2 = 0;
-int i = 0;
 int mode;
-int turndir = 0;
-int turnspeed = 2;
 mode = 0;
 char a;
 char previous;
@@ -60,37 +56,4 @@ void RTC_IRQHandler(void){
     RTC_SetTime((LPC_RTC_TypeDef *)LPC_RTC, RTC_TIMETYPE_SECOND, 0);
     RTC_SetAlarmTime((LPC_RTC_TypeDef *) LPC_RTC, RTC_TIMETYPE_SECOND, 1);
     RTC_ClearIntPending((LPC_RTC_TypeDef *)LPC_RTC, RTC_INT_ALARM);
-}
-
-void SysTick_Handler(void){
-    if(turndir == 0){
-        if (i < turnspeed){
-            i++;
-            return;
-        }
-        else{
-            write_usb_serial_blocking("interrupt systick\n\r", 19);
-            i = 0;
-            PWM_MatchUpdate((LPC_PWM_TypeDef *) LPC_PWM1,2,count,PWM_MATCH_UPDATE_NOW);
-            count++;
-            if (count >=29){
-                turndir = 1;
-            }
-        }
-    }
-    else {
-        if (i < turnspeed){
-            i++;
-            return;
-        }
-        else{
-            write_usb_serial_blocking("interrupt systick\n\r", 19);
-            i = 0;
-            PWM_MatchUpdate((LPC_PWM_TypeDef *) LPC_PWM1,2,count,PWM_MATCH_UPDATE_NOW);
-            count--;
-            if (count <=7){
-                turndir = 0;
-            }
-        }
-    }
 }
