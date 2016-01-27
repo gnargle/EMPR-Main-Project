@@ -6,14 +6,12 @@
 #define i2cport 0
 #define i2cpin1 0
 #define i2cpin2 1
-//
+
 int count2 = 0;
 int mode;
 mode = 0;
 char a;
 char previous;
-
-void SysTick_Handler(void);
 
 int main(void){
     serial_init();
