@@ -3,7 +3,7 @@
 
 void systick_init(void){
     SYSTICK_IntCmd(ENABLE);
-    SYSTICK_InternalInit(100);
+    SYSTICK_InternalInit(20);
     SYSTICK_Cmd(ENABLE);
 }
 

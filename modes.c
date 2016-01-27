@@ -2,6 +2,7 @@
 #include "keypad.c"
 #include "IR.c"
 #include "rtc.c"
+#include "systick.c"
 #include <string.h>
 //#include "largelcd.c"
 
@@ -15,23 +16,27 @@ int calibration_mode(char previous){
     while(1){
         char a = read_keypad(33);
     if (a == 'A'&& previous != a){
+        SYSTICK_IntCmd(DISABLE);
         char a = read_keypad(33);
         previous = keypad_check(a, previous);
         return 0;
     }
     else if (a == 'B'&& previous != a){
+        SYSTICK_IntCmd(DISABLE);
         clear_display(59);
         char a = read_keypad(33);
         previous = keypad_check(a, previous);
         return 1;
     }
     else if (a == 'C'&& previous != a){
+        SYSTICK_IntCmd(ENABLE);
         clear_display(59);
         char a = read_keypad(33);
         previous = keypad_check(a, previous);
         return 2;
     }
     else if (a == 'D'&& previous != a){
+        SYSTICK_IntCmd(ENABLE);
         clear_display(59);
         char a = read_keypad(33);
         previous = keypad_check(a, previous);
@@ -39,7 +44,7 @@ int calibration_mode(char previous){
     }
         else{
             distanceircalc();
-            RTC_AlarmIntConfig((LPC_RTC_TypeDef *) LPC_RTC, RTC_TIMETYPE_SECOND, DISABLE);
+            //RTC_AlarmIntConfig((LPC_RTC_TypeDef *) LPC_RTC, RTC_TIMETYPE_SECOND, DISABLE);
             PWM_MatchUpdate((LPC_PWM_TypeDef *) LPC_PWM1,2,18,PWM_MATCH_UPDATE_NOW);
             return 0;
         }
@@ -67,23 +72,27 @@ int tape_measure_mode(char previous){
 
     char a = read_keypad(33);
     if (a == 'A'&& previous != a){
+        SYSTICK_IntCmd(DISABLE);
         clear_display(59);
         char a = read_keypad(33);
         previous = keypad_check(a, previous);
         return 0;
     }
     else if (a == 'B'&& previous != a){
+        SYSTICK_IntCmd(DISABLE);
         char a = read_keypad(33);
         previous = keypad_check(a, previous);
         return 1;
     }
     else if (a == 'C'&& previous != a){
+        SYSTICK_IntCmd(ENABLE);
         clear_display(59);
         char a = read_keypad(33);
         previous = keypad_check(a, previous);
         return 2;
     }
     else if (a == 'D'&& previous != a){
+        SYSTICK_IntCmd(ENABLE);
         clear_display(59);
         char a = read_keypad(33);
         previous = keypad_check(a, previous);
@@ -91,7 +100,7 @@ int tape_measure_mode(char previous){
     }
     else{
         distanceircalc();
-        RTC_AlarmIntConfig((LPC_RTC_TypeDef *) LPC_RTC, RTC_TIMETYPE_SECOND, DISABLE);
+        //RTC_AlarmIntConfig((LPC_RTC_TypeDef *) LPC_RTC, RTC_TIMETYPE_SECOND, DISABLE);
         PWM_MatchUpdate((LPC_PWM_TypeDef *) LPC_PWM1,2,18,PWM_MATCH_UPDATE_NOW);
         return 1;
     }
@@ -101,23 +110,27 @@ int scan_mode(char previous){
     lcd_display_mode("Scan");
     char a = read_keypad(33);
     if (a == 'A'&& previous != a){
+        SYSTICK_IntCmd(DISABLE);
         clear_display(59);
         char a = read_keypad(33);
         previous = keypad_check(a, previous);
         return 0;
     }
     else if (a == 'B'&& previous != a){
+        SYSTICK_IntCmd(DISABLE);
         clear_display(59);
         char a = read_keypad(33);
         previous = keypad_check(a, previous);
         return 1;
     }
     else if (a == 'C'&& previous != a){
+        SYSTICK_IntCmd(ENABLE);
         char a = read_keypad(33);
         previous = keypad_check(a, previous);
         return 2;
     }
     else if (a == 'D'&& previous != a){
+        SYSTICK_IntCmd(ENABLE);
         clear_display(59);
         char a = read_keypad(33);
         previous = keypad_check(a, previous);
@@ -125,8 +138,8 @@ int scan_mode(char previous){
     }
     else{
         distanceircalc();
-        RTC_AlarmIntConfig((LPC_RTC_TypeDef *) LPC_RTC, RTC_TIMETYPE_SECOND, ENABLE);
-        RTC_SetAlarmTime((LPC_RTC_TypeDef *) LPC_RTC, RTC_TIMETYPE_SECOND, 1);
+        //RTC_AlarmIntConfig((LPC_RTC_TypeDef *) LPC_RTC, RTC_TIMETYPE_SECOND, ENABLE);
+        //RTC_SetAlarmTime((LPC_RTC_TypeDef *) LPC_RTC, RTC_TIMETYPE_SECOND, 1);
         return 2;
     }
 }
@@ -135,32 +148,36 @@ int multi_view_mode(char previous){
     lcd_display_mode("Multi View");
     char a = read_keypad(33);
     if (a == 'A'&& previous != a){
+        SYSTICK_IntCmd(DISABLE);
         clear_display(59);
         char a = read_keypad(33);
         previous = keypad_check(a, previous);
         return 0;
     }
     else if (a == 'B'&& previous != a){
+        SYSTICK_IntCmd(DISABLE);
         clear_display(59);
         char a = read_keypad(33);
         previous = keypad_check(a, previous);
         return 1;
     }
     else if (a == 'C'&& previous != a){
+        SYSTICK_IntCmd(ENABLE);
         clear_display(59);
         char a = read_keypad(33);
         previous = keypad_check(a, previous);
         return 2;
     }
     else if (a == 'D'&& previous != a){
+        SYSTICK_IntCmd(ENABLE);
         char a = read_keypad(33);
         previous = keypad_check(a, previous);
         return 3;
     }
     else{
         distanceircalc();
-        RTC_AlarmIntConfig((LPC_RTC_TypeDef *) LPC_RTC, RTC_TIMETYPE_SECOND, ENABLE);
-        RTC_SetAlarmTime((LPC_RTC_TypeDef *) LPC_RTC, RTC_TIMETYPE_SECOND, 1);
+        //RTC_AlarmIntConfig((LPC_RTC_TypeDef *) LPC_RTC, RTC_TIMETYPE_SECOND, ENABLE);
+        //RTC_SetAlarmTime((LPC_RTC_TypeDef *) LPC_RTC, RTC_TIMETYPE_SECOND, 1);
         return 3;
     }
 }

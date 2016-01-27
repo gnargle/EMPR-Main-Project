@@ -20,7 +20,7 @@ void rtc_init(void){
     RTC_CalibConfig((LPC_RTC_TypeDef *) LPC_RTC, 100, RTC_CALIB_DIR_FORWARD);
     RTC_SetTime((LPC_RTC_TypeDef *)LPC_RTC, RTC_TIMETYPE_SECOND, 0);
     RTC_CntIncrIntConfig((LPC_RTC_TypeDef *)LPC_RTC, RTC_TIMETYPE_SECOND, DISABLE);
-    RTC_AlarmIntConfig((LPC_RTC_TypeDef *) LPC_RTC, RTC_TIMETYPE_SECOND, ENABLE);
+    RTC_AlarmIntConfig((LPC_RTC_TypeDef *) LPC_RTC, RTC_TIMETYPE_SECOND, DISABLE);
     RTC_ClearIntPending((LPC_RTC_TypeDef *)LPC_RTC, RTC_INT_ALARM);
     //RTC_SetAlarmTime((LPC_RTC_TypeDef *) LPC_RTC, RTC_TIMETYPE_SECOND, 5);
     RTC_Cmd((LPC_RTC_TypeDef *) LPC_RTC, ENABLE);
