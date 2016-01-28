@@ -1,9 +1,11 @@
 #include "lcd_display.c"
 #include "keypad.c"
 #include "IR.c"
-#include "rtc.c"
+//#include "rtc.c"
+#include "pwm.c"
 #include "systick.c"
 #include <string.h>
+#include "timer.c"
 //#include "largelcd.c"
 
 int scan_mode(char previous);

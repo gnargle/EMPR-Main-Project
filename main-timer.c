@@ -72,7 +72,7 @@ void TIMER3_IRQHandler(void){
     TIM_ClearIntCapturePending(LPC_TIM3, TIM_CR1_INT);
     y = TIM_GetCaptureValue(LPC_TIM3, TIM_COUNTER_INCAP1);
 	//int length = (y-x);
-    int length = (y - x);
+    int length = ((y - x)/58);
     char port[10] = "";
     sprintf(port, "%i", length);
     write_usb_serial_blocking(port, 10);

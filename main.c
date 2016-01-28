@@ -12,13 +12,19 @@ int mode;
 mode = 0;
 char a;
 char previous;
+float x = 0;
+float y = 0;
+int num = 0;
 
 int main(void){
     serial_init();
-    rtc_init();
-    pwm_init(2);
+    //rtc_init();
+    pwm_init();
     adc_init();
     systick_init();
+    write_usb_serial_blocking("hi\n\r", 4);
+    ultrasound();
+    write_usb_serial_blocking("ho\n\r", 4);
 
     PINSEL_CFG_Type PinCfg;
     pin_settings(PinCfg, i2cfunc, 0, 0, i2cport, i2cpin1);
@@ -32,7 +38,6 @@ int main(void){
     calibration_mode(previous);
     while(1){
         //get_data_and_print();
-        //ultrasound();
         a = read_keypad(33);
         //previous = keypad_check(a, previous);
         switch(mode){
@@ -41,9 +46,43 @@ int main(void){
             case 2: mode = scan_mode(previous); break;
             case 3: mode = multi_view_mode(previous); break;
         }
-    }
+    }write_usb_serial_blocking("\n\r", 2);
 }
 
+
+void TIMER0_IRQHandler(void){
+    TIM_ClearIntPending(LPC_TIM0, TIM_MR0_INT);
+    if (num == 0){
+		num ++;
+		GPIO_SetValue(2, pin);	
+		TIM_UpdateMatchValue(LPC_TIM0, 0, 10);
+	}
+	else {
+		num--;
+		GPIO_ClearValue(2, pin);
+		TIM_UpdateMatchValue(LPC_TIM0, 0, 200);
+	}
+    TIM_ResetCounter(LPC_TIM0);
+}
+
+void TIMER2_IRQHandler(void){
+    TIM_ClearIntCapturePending(LPC_TIM2, TIM_CR0_INT);
+    x = TIM_GetCaptureValue(LPC_TIM2, TIM_COUNTER_INCAP0);
+
+}
+void TIMER3_IRQHandler(void){
+    TIM_ClearIntCapturePending(LPC_TIM3, TIM_CR1_INT);
+    y = TIM_GetCaptureValue(LPC_TIM3, TIM_COUNTER_INCAP1);
+    float length = ((((y - x)/2)/29.1)*100);
+    char port[30] = "";
+    sprintf(port, "Ultrasonic: %.2f", length);
+    write_usb_serial_blocking(port, 30);
+    write_usb_serial_blocking("\n\r", 2);
+    TIM_ResetCounter(LPC_TIM2);
+    TIM_ResetCounter(LPC_TIM3);
+}
+//
+/*
 void RTC_IRQHandler(void){
     write_usb_serial_blocking("interrupt\n\r", 11);
     PWM_MatchUpdate((LPC_PWM_TypeDef *) LPC_PWM1,2,count,PWM_MATCH_UPDATE_NOW);
@@ -54,4 +93,4 @@ void RTC_IRQHandler(void){
     RTC_SetTime((LPC_RTC_TypeDef *)LPC_RTC, RTC_TIMETYPE_SECOND, 0);
     RTC_SetAlarmTime((LPC_RTC_TypeDef *) LPC_RTC, RTC_TIMETYPE_SECOND, 1);
     RTC_ClearIntPending((LPC_RTC_TypeDef *)LPC_RTC, RTC_INT_ALARM);
-}
+}*/

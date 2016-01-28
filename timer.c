@@ -8,7 +8,7 @@ void pinsetup(void);
 void timer_init(void);
 
 void ultrasound(void){
-	pinsetup();
+  pinsetup();
   timer_init();
   GPIO_SetDir(2, pin, 1);
 }

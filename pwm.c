@@ -8,9 +8,9 @@
 #define pwmport 2
 #define pwmpin 1
 #define pwmfunc 1
-#define pwmpin2 2
+#define channel 2
 
-void pwm_init(int channel){
+void pwm_init(void){
     PINSEL_CFG_Type PinCfg;
     PWM_TIMERCFG_Type PWMCfg;
 
@@ -21,8 +21,7 @@ void pwm_init(int channel){
     //Determines the length of gap between pulses.
     PWM_Init((LPC_PWM_TypeDef *) LPC_PWM1, PWM_MODE_TIMER, &PWMCfg);
     //initialises pwm in timer mode with regard to PWMcfg, creating a type "LPC_PWM1".
-    pin_settings(PinCfg, pwmfunc, 0, 0, pwmport, channel-1);
-    pin_settings(PinCfg, pwmfunc, 0, 0, pwmport, channel);
+    pin_settings(PinCfg, pwmfunc, 0, 0, pwmport, pwmpin);
     //sets up the pins that are used by the PWM
     PWM_MatchUpdate((LPC_PWM_TypeDef *) LPC_PWM1,0,256,PWM_MATCH_UPDATE_NOW);
     //Sets the pwm as max value in order to initialise it.
@@ -36,10 +35,8 @@ void pwm_init(int channel){
     
 
     PWM_ChannelConfig((LPC_PWM_TypeDef *) LPC_PWM1, channel, PWM_CHANNEL_SINGLE_EDGE);
-    PWM_ChannelConfig((LPC_PWM_TypeDef *) LPC_PWM1, channel+1, PWM_CHANNEL_SINGLE_EDGE);
     //Sets channel 1 and channel 2 and singel edge mode pwms.
     PWM_MatchUpdate((LPC_PWM_TypeDef *) LPC_PWM1,channel,0,PWM_MATCH_UPDATE_NOW);
-    PWM_MatchUpdate((LPC_PWM_TypeDef *) LPC_PWM1,channel+1,0,PWM_MATCH_UPDATE_NOW);
     //sets the values of channels 1 and 2 as 0 to reset them from the max value they were given earlier.
     PWMMatchCfg.IntOnMatch = DISABLE;
     PWMMatchCfg.MatchChannel = channel;
@@ -48,12 +45,6 @@ void pwm_init(int channel){
     PWM_ConfigMatch((LPC_PWM_TypeDef *) LPC_PWM1, &PWMMatchCfg);
     PWM_ChannelCmd((LPC_PWM_TypeDef *) LPC_PWM1, channel, ENABLE);
     //Reconfigures the settings for channel 1
-    PWMMatchCfg.IntOnMatch = DISABLE;
-    PWMMatchCfg.MatchChannel = channel+1;
-    PWMMatchCfg.ResetOnMatch = DISABLE;
-    PWMMatchCfg.StopOnMatch = DISABLE;
-    PWM_ConfigMatch((LPC_PWM_TypeDef *) LPC_PWM1, &PWMMatchCfg);
-    PWM_ChannelCmd((LPC_PWM_TypeDef *) LPC_PWM1, channel+1, ENABLE);
     //Reconfigures the settings for channel 2
     PWM_ResetCounter((LPC_PWM_TypeDef *)LPC_PWM1);
     PWM_CounterCmd((LPC_PWM_TypeDef *)LPC_PWM1, ENABLE);  
