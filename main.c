@@ -15,10 +15,16 @@ char previous;
 float x = 0;
 float y = 0;
 int num = 0;
+int* time_arr;
+int* angle_arr;
+int* ir_dist_arr;
+int* us_dist_arr;
+int array_counter = 0;
+
 
 int main(void){
     serial_init();
-    //rtc_init();
+    rtc_init();
     pwm_init();
     adc_init();
     systick_init();
@@ -52,6 +58,9 @@ int main(void){
 
 void TIMER0_IRQHandler(void){
     TIM_ClearIntPending(LPC_TIM0, TIM_MR0_INT);
+    ir_dist_arr[array_counter] = distanceircalc();
+    angle_arr[array_counter] = ((count-8) * 9);
+    time_arr[array_counter] = RTC_GetTime((LPC_RTC_TypeDef *) LPC_RTC, RTC_TIMETYPE_SECOND);
     if (num == 0){
 		num ++;
 		GPIO_SetValue(2, pin);	
@@ -74,6 +83,8 @@ void TIMER3_IRQHandler(void){
     TIM_ClearIntCapturePending(LPC_TIM3, TIM_CR1_INT);
     y = TIM_GetCaptureValue(LPC_TIM3, TIM_COUNTER_INCAP1);
     float length = ((((y - x)/2)/29.1)*100);
+    us_dist_arr[array_counter] = length;
+    array_counter++;
     char port[30] = "";
     sprintf(port, "Ultrasonic: %.2f", length);
     write_usb_serial_blocking(port, 30);

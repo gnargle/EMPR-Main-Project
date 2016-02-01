@@ -1,7 +1,6 @@
 #include "lpc17xx_pinsel.h"
 #include "lpc_types.h"
 #include "lpc17xx_rtc.h"
-#include "pwm.c" //Includes: "pwm.h", "pinsel.h" & "types.h".
 
 #define rtcport 0
 #define rtcfunc 0

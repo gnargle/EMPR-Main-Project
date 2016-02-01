@@ -117,3 +117,16 @@ char keypad_check(char x, char prev){
         return prev == "Z";
     }
 }
+
+int keypad_change_servo_speed(int turn_speed, char input_key, char previous_key){
+    if (input_key == '*' && previous_key != input_key){
+        switch(turn_speed){
+            case 2: return 50;
+            case 50: return 100;
+            case 100: return 250;
+            case 250: return 500;
+            case 500: return 2;
+        }
+    }
+    else return turn_speed;
+}
