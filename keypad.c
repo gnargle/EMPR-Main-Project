@@ -130,3 +130,27 @@ int keypad_change_servo_speed(int turn_speed, char input_key, char previous_key)
     }
     else return turn_speed;
 }
+
+void keypad_change_servo_start_pos(int min_pos_num, char input_key, char previous_key){
+    if (input_key == '0' && previous_key != input_key){
+        switch(min_pos_num){
+            case 7: return 11;
+            case 11: return 15;
+            case 15: return 19;
+            case 19: return 7;
+        }
+    }
+    else return min_pos_num;
+}
+
+void keypad_change_servo_stop_pos(int max_pos_num, char input_key, char previous_key){
+    if (input_key == '#' && previous_key != input_key){
+        switch(max_pos_num){
+            case 29: return 25;
+            case 25: return 21;
+            case 21: return 17;
+            case 17: return 29
+        }
+    }
+    else return min_pos_num;
+}

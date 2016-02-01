@@ -12,6 +12,7 @@ void rtc_init(void);
 
 void rtc_init(void){
     //initialises the real time clock with regards to the values defined above.
+
     PINSEL_CFG_Type PinCfg;
     pin_settings(PinCfg, rtcfunc, 0, 0, rtcport, rtcpin);
     RTC_Init((LPC_RTC_TypeDef *) LPC_RTC);
@@ -25,3 +26,4 @@ void rtc_init(void){
     RTC_Cmd((LPC_RTC_TypeDef *) LPC_RTC, ENABLE);
     NVIC_EnableIRQ(RTC_IRQn);
 }
+
