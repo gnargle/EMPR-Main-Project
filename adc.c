@@ -41,10 +41,10 @@ uint16_t get_data_and_print(void){
     }
     uint16_t x;
     x = adc_get_data(0);
-    char port[6] = "";
-    sprintf(port, "%i", x);
-    write_usb_serial_blocking(port, 6);
-    write_usb_serial_blocking("\n\r", 2);
+    //char port[6] = "";
+    //sprintf(port, "%i", x);
+    //write_usb_serial_blocking(port, 6);
+    //write_usb_serial_blocking("\n\r", 2);
     return x;
 }
 

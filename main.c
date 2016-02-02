@@ -13,7 +13,6 @@ mode = 0;
 char a;
 char previous;
 
-
 int main(void){
     serial_init();
     rtc_init();
@@ -42,7 +41,7 @@ int main(void){
         }
     }
 }
-//
+
 /*
 void RTC_IRQHandler(void){
     write_usb_serial_blocking("interrupt\n\r", 11);

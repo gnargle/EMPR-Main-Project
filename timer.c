@@ -47,15 +47,13 @@ void timer_init(void){
 
   TIM_UpdateMatchValue(LPC_TIM0, 0, 200);
 
-  NVIC_EnableIRQ(TIMER0_IRQn);
   TIM_Cmd(LPC_TIM0, ENABLE);
-
-  NVIC_EnableIRQ(TIMER2_IRQn);
   TIM_Cmd(LPC_TIM2, ENABLE);
-
-  NVIC_EnableIRQ(TIMER3_IRQn);
   TIM_Cmd(LPC_TIM3, ENABLE);
-  
+
+  NVIC_EnableIRQ(TIMER0_IRQn);
+  NVIC_EnableIRQ(TIMER2_IRQn);
+  NVIC_EnableIRQ(TIMER3_IRQn);  
   }
 
 void pinsetup(void){

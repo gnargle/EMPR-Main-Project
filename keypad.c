@@ -104,10 +104,6 @@ char keypad_check(char x, char prev){
     }
     else if (x != 'Z' && x != prev){
         prev = x;
-        char out[1];
-        sprintf(out, "%c", x);
-        write_usb_serial_blocking(out, 1);
-        write_usb_serial_blocking("\n\r", 2);
         return prev;
     }
     else if (x == 'Z' && prev != 'Z'){
@@ -122,12 +118,12 @@ void keypad_change_servo_speed(int* turn_speed, char input_key, char* previous_k
     if (input_key == '*' && *previous_key != input_key){
         *previous_key = '*';
         switch(*turn_speed){
-            case 2: *turn_speed = 25;return;
+            case 2: *turn_speed = 8;return;
+            case 8: *turn_speed = 15;return;
+            case 15: *turn_speed = 25;return;
             case 25: *turn_speed = 50;return;
             case 50: *turn_speed = 100;return;
-            case 100: *turn_speed = 250;return;
-            case 250: *turn_speed = 500;return;
-            case 500: *turn_speed = 2;return;
+            case 100: *turn_speed = 2;return;
         }
     }
     else return;
@@ -159,4 +155,18 @@ void keypad_change_servo_stop_pos(int* max_pos_num, char input_key, char* previo
     else return;
 }
 
-void keypad_change_sample_rate(){}
+void keypad_change_sample_rate(int* sample_rate, char input_key, char* previous_key){
+    if (input_key == '8' && *previous_key != input_key){
+        *previous_key = '8';
+        switch(*sample_rate){
+            case 100: *sample_rate = 200;return;
+            case 200: *sample_rate = 300;return;
+            case 300: *sample_rate = 400;return;
+            case 400: *sample_rate = 600;return;
+            case 600: *sample_rate = 1000;return;
+            case 1000: *sample_rate = 2000;return;
+            case 2000: *sample_rate = 100;return;
+        }
+    }
+    else return;
+}

@@ -24,12 +24,12 @@ int avgdistance = 0;
 int sensorselector = 0;
 int servo_start = 7;
 int servo_stop = 29;
-int* time_arr;
-int* angle_arr;
-int* ir_dist_arr;
-int* us_dist_arr;
+int time_arr[100];
+int angle_arr[100];
+int ir_dist_arr[100];
+int us_dist_arr[100];
 int array_counter = 0;
-int samplerate = 100;
+int samplerate = 200;
 int num = 0;
 float x = 0;
 float y = 0;
@@ -73,6 +73,8 @@ int calibration_mode(char previous){
         //distanceircalc();
         //RTC_AlarmIntConfig((LPC_RTC_TypeDef *) LPC_RTC, RTC_TIMETYPE_SECOND, DISABLE);
         PWM_MatchUpdate((LPC_PWM_TypeDef *) LPC_PWM1,2,18,PWM_MATCH_UPDATE_NOW);
+        keypad_change_sample_rate(&samplerate, a, &previous);
+        previous = keypad_check(a, previous);
         return 0;
     }
 }
@@ -116,6 +118,8 @@ int tape_measure_mode(char previous){
         //distanceircalc();
         //RTC_AlarmIntConfig((LPC_RTC_TypeDef *) LPC_RTC, RTC_TIMETYPE_SECOND, DISABLE);
         PWM_MatchUpdate((LPC_PWM_TypeDef *) LPC_PWM1,2,18,PWM_MATCH_UPDATE_NOW);
+        keypad_change_sample_rate(&samplerate, a, &previous);
+        previous = keypad_check(a, previous);
         return 1;
     }
 }
@@ -156,6 +160,8 @@ int scan_mode(char previous){
         keypad_change_servo_speed(&turnspeed, a, &previous);
         keypad_change_servo_start_pos(&servo_start, a, &previous);
         keypad_change_servo_stop_pos(&servo_stop, a, &previous);
+        keypad_change_sample_rate(&samplerate, a, &previous);
+        previous = keypad_check(a, previous);
         //distanceircalc();
         //RTC_AlarmIntConfig((LPC_RTC_TypeDef *) LPC_RTC, RTC_TIMETYPE_SECOND, ENABLE);
         //RTC_SetAlarmTime((LPC_RTC_TypeDef *) LPC_RTC, RTC_TIMETYPE_SECOND, 1);
@@ -200,6 +206,8 @@ int multi_view_mode(char previous){
         keypad_change_servo_speed(&turnspeed, a, &previous);
         keypad_change_servo_start_pos(&servo_start, a, &previous);
         keypad_change_servo_stop_pos(&servo_stop, a, &previous);
+        keypad_change_sample_rate(&samplerate, a, &previous);
+        previous = keypad_check(a, previous);
         //distanceircalc();
         //RTC_AlarmIntConfig((LPC_RTC_TypeDef *) LPC_RTC, RTC_TIMETYPE_SECOND, ENABLE);
         //RTC_SetAlarmTime((LPC_RTC_TypeDef *) LPC_RTC, RTC_TIMETYPE_SECOND, 1);
@@ -304,7 +312,6 @@ void SysTick_Handler(void){
             return;
         }
         else{
-            write_usb_serial_blocking("interrupt systick\n\r", 19);
             systick_count = 0;
             PWM_MatchUpdate((LPC_PWM_TypeDef *) LPC_PWM1,2,count,PWM_MATCH_UPDATE_NOW);
             count++;
@@ -320,7 +327,6 @@ void SysTick_Handler(void){
             return;
         }
         else{
-            write_usb_serial_blocking("interrupt systick\n\r", 19);
             systick_count = 0;
             PWM_MatchUpdate((LPC_PWM_TypeDef *) LPC_PWM1,2,count,PWM_MATCH_UPDATE_NOW);
             count--;
@@ -344,7 +350,7 @@ void TIMER0_IRQHandler(void){
         GPIO_ClearValue(2, pin);
         TIM_UpdateMatchValue(LPC_TIM0, 0, samplerate);
         ir_dist_arr[array_counter] = distanceircalc();
-        angle_arr[array_counter] = ((count-8) * 9);
+       angle_arr[array_counter] = ((count-8) * 9);
         time_arr[array_counter] = RTC_GetTime((LPC_RTC_TypeDef *) LPC_RTC, RTC_TIMETYPE_SECOND);
     }
     TIM_ResetCounter(LPC_TIM0);
