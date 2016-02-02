@@ -1,7 +1,7 @@
 #include "lcd_display.c"
 #include "keypad.c"
 #include "IR.c"
-//#include "rtc.c"
+#include "rtc.c"
 #include "pwm.c"
 #include "systick.c"
 #include <string.h>
@@ -22,9 +22,20 @@ int turndir = 0;
 int turnspeed = 2;
 int avgdistance = 0;
 int sensorselector = 0;
+int servo_start = 7;
+int servo_stop = 29;
+int* time_arr;
+int* angle_arr;
+int* ir_dist_arr;
+int* us_dist_arr;
+int array_counter = 0;
+int samplerate = 100;
+int num = 0;
+float x = 0;
+float y = 0;
 
 int calibration_mode(char previous){
-    sensor_changer();
+    //sensor_changer();
     count = 18;
     lcd_display_top_row("Calibration");
     lcd_display_bottom_row();
@@ -35,7 +46,7 @@ int calibration_mode(char previous){
         SYSTICK_IntCmd(DISABLE);
         char a = read_keypad(33);
         previous = keypad_check(a, previous);
-        return 4;
+        return 0;
     }
     else if (a == 'B'&& previous != a){
         SYSTICK_IntCmd(DISABLE);
@@ -59,10 +70,10 @@ int calibration_mode(char previous){
         return 3;
     }
     else{
-        distanceircalc();
+        //distanceircalc();
         //RTC_AlarmIntConfig((LPC_RTC_TypeDef *) LPC_RTC, RTC_TIMETYPE_SECOND, DISABLE);
         PWM_MatchUpdate((LPC_PWM_TypeDef *) LPC_PWM1,2,18,PWM_MATCH_UPDATE_NOW);
-        return 4;
+        return 0;
     }
 }
 
@@ -79,7 +90,7 @@ int tape_measure_mode(char previous){
         clear_display(59);
         char a = read_keypad(33);
         previous = keypad_check(a, previous);
-        return 4;
+        return 0;
     }
     else if (a == 'B'&& previous != a){
         SYSTICK_IntCmd(DISABLE);
@@ -102,7 +113,7 @@ int tape_measure_mode(char previous){
         return 3;
     }
     else{
-        distanceircalc();
+        //distanceircalc();
         //RTC_AlarmIntConfig((LPC_RTC_TypeDef *) LPC_RTC, RTC_TIMETYPE_SECOND, DISABLE);
         PWM_MatchUpdate((LPC_PWM_TypeDef *) LPC_PWM1,2,18,PWM_MATCH_UPDATE_NOW);
         return 1;
@@ -119,7 +130,7 @@ int scan_mode(char previous){
         clear_display(59);
         char a = read_keypad(33);
         previous = keypad_check(a, previous);
-        return 4;
+        return 0;
     }
     else if (a == 'B'&& previous != a){
         SYSTICK_IntCmd(DISABLE);
@@ -142,7 +153,10 @@ int scan_mode(char previous){
         return 3;
     }
     else{
-        distanceircalc();
+        keypad_change_servo_speed(&turnspeed, a, &previous);
+        keypad_change_servo_start_pos(&servo_start, a, &previous);
+        keypad_change_servo_stop_pos(&servo_stop, a, &previous);
+        //distanceircalc();
         //RTC_AlarmIntConfig((LPC_RTC_TypeDef *) LPC_RTC, RTC_TIMETYPE_SECOND, ENABLE);
         //RTC_SetAlarmTime((LPC_RTC_TypeDef *) LPC_RTC, RTC_TIMETYPE_SECOND, 1);
         return 2;
@@ -160,7 +174,7 @@ int multi_view_mode(char previous){
         clear_display(59);
         char a = read_keypad(33);
         previous = keypad_check(a, previous);
-        return 4;
+        return 0;
     }
     else if (a == 'B'&& previous != a){
         SYSTICK_IntCmd(DISABLE);
@@ -183,7 +197,10 @@ int multi_view_mode(char previous){
         return 3;
     }
     else{
-        distanceircalc();
+        keypad_change_servo_speed(&turnspeed, a, &previous);
+        keypad_change_servo_start_pos(&servo_start, a, &previous);
+        keypad_change_servo_stop_pos(&servo_stop, a, &previous);
+        //distanceircalc();
         //RTC_AlarmIntConfig((LPC_RTC_TypeDef *) LPC_RTC, RTC_TIMETYPE_SECOND, ENABLE);
         //RTC_SetAlarmTime((LPC_RTC_TypeDef *) LPC_RTC, RTC_TIMETYPE_SECOND, 1);
         return 3;
@@ -291,7 +308,7 @@ void SysTick_Handler(void){
             systick_count = 0;
             PWM_MatchUpdate((LPC_PWM_TypeDef *) LPC_PWM1,2,count,PWM_MATCH_UPDATE_NOW);
             count++;
-            if (count >=29){
+            if (count >=servo_stop){
                 //avgdistance = (sum / 20);
                 turndir = 1;
             }
@@ -307,10 +324,47 @@ void SysTick_Handler(void){
             systick_count = 0;
             PWM_MatchUpdate((LPC_PWM_TypeDef *) LPC_PWM1,2,count,PWM_MATCH_UPDATE_NOW);
             count--;
-            if (count <=7){
+            if (count <=servo_start){
                 //avgdistance = (sum / 20);
                 turndir = 0;
             }
         }
     }
+}
+
+void TIMER0_IRQHandler(void){
+    TIM_ClearIntPending(LPC_TIM0, TIM_MR0_INT);
+    if (num == 0){
+        num ++;
+        GPIO_SetValue(2, pin);  
+        TIM_UpdateMatchValue(LPC_TIM0, 0, 10);
+    }
+    else {
+        num--;
+        GPIO_ClearValue(2, pin);
+        TIM_UpdateMatchValue(LPC_TIM0, 0, samplerate);
+        ir_dist_arr[array_counter] = distanceircalc();
+        angle_arr[array_counter] = ((count-8) * 9);
+        time_arr[array_counter] = RTC_GetTime((LPC_RTC_TypeDef *) LPC_RTC, RTC_TIMETYPE_SECOND);
+    }
+    TIM_ResetCounter(LPC_TIM0);
+}
+
+void TIMER2_IRQHandler(void){
+    TIM_ClearIntCapturePending(LPC_TIM2, TIM_CR0_INT);
+    x = TIM_GetCaptureValue(LPC_TIM2, TIM_COUNTER_INCAP0);
+}
+
+void TIMER3_IRQHandler(void){
+    TIM_ClearIntCapturePending(LPC_TIM3, TIM_CR1_INT);
+    y = TIM_GetCaptureValue(LPC_TIM3, TIM_COUNTER_INCAP1);
+    float length = ((((y - x)/2)/29.1)*100);
+    us_dist_arr[array_counter] = length;
+    array_counter++;
+    char port[30] = "";
+    sprintf(port, "Ultrasonic: %.2f", length);
+    write_usb_serial_blocking(port, 30);
+    write_usb_serial_blocking("\n\r", 2);
+    TIM_ResetCounter(LPC_TIM2);
+    TIM_ResetCounter(LPC_TIM3);
 }

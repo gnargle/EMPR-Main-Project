@@ -118,40 +118,45 @@ char keypad_check(char x, char prev){
     }
 }
 
-int keypad_change_servo_speed(int turn_speed, char input_key, char previous_key){
-    if (input_key == '*' && previous_key != input_key){
-        switch(turn_speed){
-            case 2: return 25;
-            case 25: return 50;
-            case 50: return 100;
-            case 100: return 250;
-            case 250: return 500;
-            case 500: return 2;
+void keypad_change_servo_speed(int* turn_speed, char input_key, char* previous_key){
+    if (input_key == '*' && *previous_key != input_key){
+        *previous_key = '*';
+        switch(*turn_speed){
+            case 2: *turn_speed = 25;return;
+            case 25: *turn_speed = 50;return;
+            case 50: *turn_speed = 100;return;
+            case 100: *turn_speed = 250;return;
+            case 250: *turn_speed = 500;return;
+            case 500: *turn_speed = 2;return;
         }
     }
-    else return turn_speed;
+    else return;
 }
 
-int keypad_change_servo_start_pos(int min_pos_num, char input_key, char previous_key){
-    if (input_key == '0' && previous_key != input_key){
-        switch(min_pos_num){
-            case 7: return 11;
-            case 11: return 15;
-            case 15: return 19;
-            case 19: return 7;
+void keypad_change_servo_start_pos(int* min_pos_num, char input_key, char* previous_key){
+    if (input_key == '0' && *previous_key != input_key){
+        *previous_key = '0';
+        switch(*min_pos_num){
+            case 7: *min_pos_num = 11;return;
+            case 11: *min_pos_num = 15;return;
+            case 15: *min_pos_num = 19;return;
+            case 19: *min_pos_num = 7;return;
         }
     }
-    else return min_pos_num;
+    else return;
 }
 
-int keypad_change_servo_stop_pos(int max_pos_num, char input_key, char previous_key){
-    if (input_key == '#' && previous_key != input_key){
-        switch(max_pos_num){
-            case 29: return 25;
-            case 25: return 21;
-            case 21: return 17;
-            case 17: return 29;
+void keypad_change_servo_stop_pos(int* max_pos_num, char input_key, char* previous_key){
+    if (input_key == '#' && *previous_key != input_key){
+        *previous_key = '#';
+        switch(*max_pos_num){
+            case 29: *max_pos_num = 25;return;
+            case 25: *max_pos_num = 21;return;
+            case 21: *max_pos_num = 17;return;
+            case 17: *max_pos_num = 29;return;
         }
     }
-    else return max_pos_num;
+    else return;
 }
+
+void keypad_change_sample_rate(){}
