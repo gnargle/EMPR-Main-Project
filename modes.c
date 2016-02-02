@@ -13,14 +13,18 @@ int tape_measure_mode(char previous);
 int calibration_mode(char previous);
 void lcd_display_bottom_row();
 void lcd_display_top_row(char* currentmode);
+void sensor_changer(void);
+
 //Variables used in systick handler
 int systick_count = 0;
 int count = 8;
 int turndir = 0;
 int turnspeed = 2;
 int avgdistance = 0;
+int sensorselector = 0;
 
 int calibration_mode(char previous){
+    sensor_changer();
     count = 18;
     lcd_display_top_row("Calibration");
     lcd_display_bottom_row();
@@ -29,13 +33,13 @@ int calibration_mode(char previous){
     char a = read_keypad(33);
     if (a == 'A'&& previous != a){
         SYSTICK_IntCmd(DISABLE);
-        clear_display(59);
         char a = read_keypad(33);
         previous = keypad_check(a, previous);
-        return 0;
+        return 4;
     }
     else if (a == 'B'&& previous != a){
         SYSTICK_IntCmd(DISABLE);
+        clear_display(59);
         char a = read_keypad(33);
         previous = keypad_check(a, previous);
         return 1;
@@ -58,11 +62,12 @@ int calibration_mode(char previous){
         distanceircalc();
         //RTC_AlarmIntConfig((LPC_RTC_TypeDef *) LPC_RTC, RTC_TIMETYPE_SECOND, DISABLE);
         PWM_MatchUpdate((LPC_PWM_TypeDef *) LPC_PWM1,2,18,PWM_MATCH_UPDATE_NOW);
-        return 0;
+        return 4;
     }
 }
 
 int tape_measure_mode(char previous){
+    sensor_changer();
     count = 18;
     lcd_display_top_row("Tpe Measure");
     lcd_display_bottom_row();
@@ -74,7 +79,7 @@ int tape_measure_mode(char previous){
         clear_display(59);
         char a = read_keypad(33);
         previous = keypad_check(a, previous);
-        return 0;
+        return 4;
     }
     else if (a == 'B'&& previous != a){
         SYSTICK_IntCmd(DISABLE);
@@ -105,6 +110,7 @@ int tape_measure_mode(char previous){
 }
 
 int scan_mode(char previous){
+    sensor_changer();
     lcd_display_top_row("Scan");
     lcd_display_bottom_row();
     char a = read_keypad(33);
@@ -113,7 +119,7 @@ int scan_mode(char previous){
         clear_display(59);
         char a = read_keypad(33);
         previous = keypad_check(a, previous);
-        return 0;
+        return 4;
     }
     else if (a == 'B'&& previous != a){
         SYSTICK_IntCmd(DISABLE);
@@ -144,15 +150,17 @@ int scan_mode(char previous){
 }
 
 int multi_view_mode(char previous){
+    sensor_changer();
     lcd_display_top_row("Multi View");
     lcd_display_bottom_row();
+    
     char a = read_keypad(33);
     if (a == 'A'&& previous != a){
         SYSTICK_IntCmd(DISABLE);
         clear_display(59);
         char a = read_keypad(33);
         previous = keypad_check(a, previous);
-        return 0;
+        return 4;
     }
     else if (a == 'B'&& previous != a){
         SYSTICK_IntCmd(DISABLE);
@@ -182,6 +190,19 @@ int multi_view_mode(char previous){
     }
 }
 
+void sensor_changer(void){
+    char b = read_keypad(33);
+    if (b == '1'){
+
+        if (sensorselector = 0){
+                sensorselector = 1;
+        }
+        else {
+                sensorselector = 0;
+        }        
+    }         
+}
+
 void lcd_display_top_row(char* currentmode){
     char reqspeedtodisplay[2];
     char samplespersweeptodisplay[2];
@@ -207,28 +228,33 @@ void lcd_display_top_row(char* currentmode){
 }
 
 
-void lcd_display_bottom_row(void){
+void lcd_display_bottom_row(){
     char rawvaluetodisplay[4];
     char servoangletodisplay[3];
-    char* distancetodisplay;
+    char distancetodisplay[3];
     char avgdistancetodisplay[3];
     int servoangle;
     int rawvalue;
+    int s = 6;
     //Calculating angle of servo
     servoangle = ((count-8) * 9);
     
-    //gets data from adc
+    //gets data from adc or ultrasound depending on mode.
+    //if (sensorselector == 0){
     rawvalue = get_data();
-
+    //}
+    //else{
+        //Ultrasound data
+        //rawvalue = 0;
+    //}
     //Writes <6 if distance too small
-    int distance = distanceircalc();
-    if (distance == -1){
-        distancetodisplay = "<6";
+    int distance = distanceircalc();    
+    if (distance == -1){ 
+        sprintf(distancetodisplay, "<%i", s);  
     }
-    else{
+    else{  
         sprintf(distancetodisplay, "%i", distance);
-    }
-
+    }              
     sprintf(rawvaluetodisplay,"%i",rawvalue);
     sprintf(servoangletodisplay,"%i",servoangle);
     sprintf(avgdistancetodisplay,"%i",avgdistance);
@@ -288,4 +314,3 @@ void SysTick_Handler(void){
         }
     }
 }
-
