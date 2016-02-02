@@ -260,7 +260,7 @@ void lcd_display_bottom_row(){
     char avgdistancetodisplay[3];
     int servoangle;
     int rawvalue;
-    int s = 6;
+    int s = 7;
     //Calculating angle of servo
     servoangle = ((count-8) * 9);
     
