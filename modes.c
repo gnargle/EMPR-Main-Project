@@ -21,15 +21,16 @@ int systick_count = 0;
 int count = 8;
 int turndir = 0;
 int turnspeed = 2;
-int avgdistance = 0;
 int sensor_selector = 0;
 int servo_start = 7;
 int servo_stop = 29;
-int time_arr[100];
-int angle_arr[100];
-int ir_dist_arr[100];
-int us_dist_arr[100];
-int us_raw_arr[100];
+int time_arr[1000];
+int angle_arr[1000];
+int ir_dist_arr[1000];
+int us_dist_arr[1000];
+int us_raw_arr[1000];
+int ir_avg;
+int us_avg;
 int array_counter = 0;
 int samplerate = 200;
 int num = 0;
@@ -294,7 +295,7 @@ void lcd_display_bottom_row(){
         }              
         sprintf(rawvaluetodisplay,"%i",rawvalue);
         sprintf(servoangletodisplay,"%i",servoangle);
-        sprintf(avgdistancetodisplay,"%i",avgdistance);
+        sprintf(avgdistancetodisplay,"%i",ir_avg);
 
         int addr = 0x80+16;
         int i;
@@ -323,7 +324,7 @@ void lcd_display_bottom_row(){
 
         sprintf(rawvaluetodisplay,"%i",us_raw_arr[array_counter]);
         sprintf(servoangletodisplay,"%i",servoangle);
-        sprintf(avgdistancetodisplay,"%i",avgdistance);
+        sprintf(avgdistancetodisplay,"%i",us_avg);
 
         int addr = 0x80+16;
         int i;
@@ -348,6 +349,20 @@ void lcd_display_bottom_row(){
 
     //int distance = distanceircalc();    
     
+}
+
+void average_calculator(int* us_arr, int* ir_arr, int counter, int* us_avg, int* ir_avg){
+
+    int u;
+    int us_total = 0;
+    int ir_total = 0;
+    for (u = 0; u <= counter; u++){
+        us_total += us_arr[u];
+        ir_total += ir_arr[u];
+    }
+    *ir_avg = (ir_total/counter +1);
+    *us_avg = (us_total/counter +1);
+    return;
 }
 
 void SysTick_Handler(void){
@@ -395,9 +410,10 @@ void TIMER0_IRQHandler(void){
         GPIO_ClearValue(2, pin);
         TIM_UpdateMatchValue(LPC_TIM0, 0, samplerate);
         ir_dist_arr[array_counter] = distanceircalc();
-       angle_arr[array_counter] = ((count-8) * 9);
+        angle_arr[array_counter] = ((count-8) * 9);
         time_arr[array_counter] = RTC_GetTime((LPC_RTC_TypeDef *) LPC_RTC, RTC_TIMETYPE_SECOND);
     }
+    average_calculator(us_dist_arr, ir_dist_arr, array_counter, &us_avg, &ir_avg);
     TIM_ResetCounter(LPC_TIM0);
 }
 
