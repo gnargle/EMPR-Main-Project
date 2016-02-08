@@ -13,21 +13,23 @@ int tape_measure_mode(char previous);
 int calibration_mode(char previous);
 void lcd_display_bottom_row();
 void lcd_display_top_row(char* currentmode);
-void sensor_changer(void);
+void sensor_changer(int* selector_value, char* previous_key);
 
 //Variables used in systick handler
+
 int systick_count = 0;
 int count = 8;
 int turndir = 0;
 int turnspeed = 2;
 int avgdistance = 0;
-int sensorselector = 0;
+int sensor_selector = 0;
 int servo_start = 7;
 int servo_stop = 29;
 int time_arr[100];
 int angle_arr[100];
 int ir_dist_arr[100];
 int us_dist_arr[100];
+int us_raw_arr[100];
 int array_counter = 0;
 int samplerate = 200;
 int num = 0;
@@ -35,7 +37,7 @@ float x = 0;
 float y = 0;
 
 int calibration_mode(char previous){
-    //sensor_changer();
+    sensor_changer(&sensor_selector, &previous);
     count = 18;
     lcd_display_top_row("Calibration");
     lcd_display_bottom_row();
@@ -80,7 +82,7 @@ int calibration_mode(char previous){
 }
 
 int tape_measure_mode(char previous){
-    sensor_changer();
+    sensor_changer(&sensor_selector, &previous);
     count = 18;
     lcd_display_top_row("Tpe Measure");
     lcd_display_bottom_row();
@@ -125,7 +127,7 @@ int tape_measure_mode(char previous){
 }
 
 int scan_mode(char previous){
-    sensor_changer();
+    sensor_changer(&sensor_selector, &previous);
     lcd_display_top_row("Scan");
     lcd_display_bottom_row();
     char a = read_keypad(33);
@@ -170,7 +172,7 @@ int scan_mode(char previous){
 }
 
 int multi_view_mode(char previous){
-    sensor_changer();
+    sensor_changer(&sensor_selector, &previous);
     lcd_display_top_row("Multi View");
     lcd_display_bottom_row();
     
@@ -215,15 +217,21 @@ int multi_view_mode(char previous){
     }
 }
 
-void sensor_changer(void){
+void sensor_changer(int* selector_value, char* previous_key){
+    write_usb_serial_blocking("sensor changer\n\r", 16);
     char b = read_keypad(33);
-    if (b == '1'){
-
-        if (sensorselector = 0){
-                sensorselector = 1;
+    if (b == '1' && *previous_key != b){
+        char port[1];
+        sprintf(port, "%i", *selector_value);
+        write_usb_serial_blocking(port, 1);
+        *previous_key = b;
+        if (*selector_value == 0){
+                *selector_value = 1;
+                return;
         }
         else {
-                sensorselector = 0;
+                *selector_value = 0;
+                return;
         }        
     }         
 }
@@ -265,44 +273,81 @@ void lcd_display_bottom_row(){
     servoangle = ((count-8) * 9);
     
     //gets data from adc or ultrasound depending on mode.
-    //if (sensorselector == 0){
-    rawvalue = get_data();
+    //if (sensorselector == 0){}
     //}
     //else{
         //Ultrasound data
         //rawvalue = 0;
     //}
     //Writes <6 if distance too small
-    int distance = distanceircalc();    
-    if (distance == -1){ 
-        sprintf(distancetodisplay, "<%i", s);  
-    }
-    else{  
-        sprintf(distancetodisplay, "%i", distance);
-    }              
-    sprintf(rawvaluetodisplay,"%i",rawvalue);
-    sprintf(servoangletodisplay,"%i",servoangle);
-    sprintf(avgdistancetodisplay,"%i",avgdistance);
 
-    int addr = 0x80+16;
-    int i;
+    if (sensor_selector == 0){
+
+        rawvalue = get_data();
+
+        int distance = ir_dist_arr[array_counter];
+        if (distance == -1){ 
+            sprintf(distancetodisplay, "<%i", s);  
+        }
+        else{  
+            sprintf(distancetodisplay, "%i", distance);
+        }              
+        sprintf(rawvaluetodisplay,"%i",rawvalue);
+        sprintf(servoangletodisplay,"%i",servoangle);
+        sprintf(avgdistancetodisplay,"%i",avgdistance);
+
+        int addr = 0x80+16;
+        int i;
     //Displays all 4 things on the bottom row in correct order
-    for (i = 0; i < strlen(rawvaluetodisplay); i++){
-        addr = alloc_lcd_addr(addr, i, rawvaluetodisplay);
+        for (i = 0; i < strlen(rawvaluetodisplay); i++){
+            addr = alloc_lcd_addr(addr, i, rawvaluetodisplay);
+        }
+        addr = alloc_lcd_addr(addr, 0, " ");
+        for (i = 0; i < strlen(servoangletodisplay); i++){
+            addr = alloc_lcd_addr(addr, i, servoangletodisplay);
+        }
+        addr = alloc_lcd_addr(addr, 0, " ");
+        for (i = 0; i < strlen(distancetodisplay); i++){
+            addr = alloc_lcd_addr(addr, i, distancetodisplay);
+        }
+        addr = alloc_lcd_addr(addr, 0, " ");
+        for (i = 0; i < strlen(avgdistancetodisplay); i++){
+            addr = alloc_lcd_addr(addr, i, avgdistancetodisplay);
+        }
+        addr = alloc_lcd_addr(addr, 0, " ");
     }
-    addr = alloc_lcd_addr(addr, 0, " ");
-    for (i = 0; i < strlen(servoangletodisplay); i++){
-        addr = alloc_lcd_addr(addr, i, servoangletodisplay);
+
+    else{
+
+        int distance = us_dist_arr[array_counter];
+
+        sprintf(rawvaluetodisplay,"%i",us_raw_arr[array_counter]);
+        sprintf(servoangletodisplay,"%i",servoangle);
+        sprintf(avgdistancetodisplay,"%i",avgdistance);
+
+        int addr = 0x80+16;
+        int i;
+    //Displays all 4 things on the bottom row in correct order
+        for (i = 0; i < strlen(rawvaluetodisplay); i++){
+            addr = alloc_lcd_addr(addr, i, rawvaluetodisplay);
+        }
+        addr = alloc_lcd_addr(addr, 0, " ");
+        for (i = 0; i < strlen(servoangletodisplay); i++){
+            addr = alloc_lcd_addr(addr, i, servoangletodisplay);
+        }
+        addr = alloc_lcd_addr(addr, 0, " ");
+        for (i = 0; i < strlen(distancetodisplay); i++){
+            addr = alloc_lcd_addr(addr, i, distancetodisplay);
+        }
+        addr = alloc_lcd_addr(addr, 0, " ");
+        for (i = 0; i < strlen(avgdistancetodisplay); i++){
+            addr = alloc_lcd_addr(addr, i, avgdistancetodisplay);
+        }
+        addr = alloc_lcd_addr(addr, 0, " ");
     }
-    addr = alloc_lcd_addr(addr, 0, " ");
-    for (i = 0; i < strlen(distancetodisplay); i++){
-        addr = alloc_lcd_addr(addr, i, distancetodisplay);
-    }
-    addr = alloc_lcd_addr(addr, 0, " ");
-    for (i = 0; i < strlen(avgdistancetodisplay); i++){
-        addr = alloc_lcd_addr(addr, i, avgdistancetodisplay);
-    }
-    addr = alloc_lcd_addr(addr, 0, " ");
+
+    //int distance = distanceircalc();    
+    
 }
 
 void SysTick_Handler(void){
@@ -363,8 +408,8 @@ void TIMER2_IRQHandler(void){
 
 void TIMER3_IRQHandler(void){
     TIM_ClearIntCapturePending(LPC_TIM3, TIM_CR1_INT);
-    y = TIM_GetCaptureValue(LPC_TIM3, TIM_COUNTER_INCAP1);
-    float length = ((((y - x)/2)/29.1)*100);
+    us_raw_arr[array_counter] = TIM_GetCaptureValue(LPC_TIM3, TIM_COUNTER_INCAP1);
+    float length = ((((us_raw_arr[array_counter] - x)/2)/29.1)*100);
     us_dist_arr[array_counter] = length;
     array_counter++;
     char port[30] = "";
