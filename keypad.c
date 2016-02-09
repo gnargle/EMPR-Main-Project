@@ -159,13 +159,12 @@ void keypad_change_sample_rate(int* sample_rate, char input_key, char* previous_
     if (input_key == '8' && *previous_key != input_key){
         *previous_key = '8';
         switch(*sample_rate){
-            case 100: *sample_rate = 200;return;
-            case 200: *sample_rate = 300;return;
-            case 300: *sample_rate = 400;return;
-            case 400: *sample_rate = 600;return;
-            case 600: *sample_rate = 1000;return;
-            case 1000: *sample_rate = 2000;return;
-            case 2000: *sample_rate = 100;return;
+            case 2500: *sample_rate = 5000;return;
+            case 5000: *sample_rate = 10000;return;
+            case 10000: *sample_rate = 15000;return;
+            case 15000: *sample_rate = 20000;return;
+            case 20000: *sample_rate = 40000;return;
+            case 40000: *sample_rate = 2500;return;
         }
     }
     else return;

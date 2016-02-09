@@ -39,10 +39,16 @@ int main(void){
             case 2: mode = scan_mode(previous); break;
             case 3: mode = multi_view_mode(previous); break;
         }
+        ir_dist_arr[array_counter] = ir_dist;
+        ir_raw_arr[array_counter] = ir_raw;
+        if (us_dist > 0 && us_dist < 500){
+                us_dist_arr[array_counter] = us_dist;
+        }
+        us_raw_arr[array_counter] = us_raw;
     }
 }
 
-/*
+/*//
 void RTC_IRQHandler(void){
     write_usb_serial_blocking("interrupt\n\r", 11);
     PWM_MatchUpdate((LPC_PWM_TypeDef *) LPC_PWM1,2,count,PWM_MATCH_UPDATE_NOW);

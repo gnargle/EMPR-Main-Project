@@ -24,15 +24,23 @@ int turnspeed = 2;
 int sensor_selector = 0;
 int servo_start = 7;
 int servo_stop = 29;
-int time_arr[1000];
-int angle_arr[1000];
-int ir_dist_arr[1000];
-int us_dist_arr[1000];
-int us_raw_arr[1000];
+
+int ir_dist = 0;
+int ir_raw = 0;
+int us_dist = 0;
+int us_raw = 0;
+
+int time_arr[100];
+int angle_arr[100];
+int ir_dist_arr[100];
+int ir_raw_arr[100];
+int us_dist_arr[100];
+int us_raw_arr[100];
+
 int ir_avg;
 int us_avg;
 int array_counter = 0;
-int samplerate = 200;
+int samplerate = 2500;
 int num = 0;
 float x = 0;
 float y = 0;
@@ -40,7 +48,7 @@ float y = 0;
 int calibration_mode(char previous){
     sensor_changer(&sensor_selector, &previous);
     count = 18;
-    lcd_display_top_row("Calibration");
+    lcd_display_top_row("Cali");
     lcd_display_bottom_row();
     
 
@@ -77,6 +85,7 @@ int calibration_mode(char previous){
         //RTC_AlarmIntConfig((LPC_RTC_TypeDef *) LPC_RTC, RTC_TIMETYPE_SECOND, DISABLE);
         PWM_MatchUpdate((LPC_PWM_TypeDef *) LPC_PWM1,2,18,PWM_MATCH_UPDATE_NOW);
         keypad_change_sample_rate(&samplerate, a, &previous);
+        average_calculator(us_dist_arr, ir_dist_arr, array_counter, &us_avg, &ir_avg);
         previous = keypad_check(a, previous);
         return 0;
     }
@@ -85,7 +94,7 @@ int calibration_mode(char previous){
 int tape_measure_mode(char previous){
     sensor_changer(&sensor_selector, &previous);
     count = 18;
-    lcd_display_top_row("Tpe Measure");
+    lcd_display_top_row("Tape");
     lcd_display_bottom_row();
     
 
@@ -122,6 +131,7 @@ int tape_measure_mode(char previous){
         //RTC_AlarmIntConfig((LPC_RTC_TypeDef *) LPC_RTC, RTC_TIMETYPE_SECOND, DISABLE);
         PWM_MatchUpdate((LPC_PWM_TypeDef *) LPC_PWM1,2,18,PWM_MATCH_UPDATE_NOW);
         keypad_change_sample_rate(&samplerate, a, &previous);
+        average_calculator(us_dist_arr, ir_dist_arr, array_counter, &us_avg, &ir_avg);
         previous = keypad_check(a, previous);
         return 1;
     }
@@ -164,7 +174,9 @@ int scan_mode(char previous){
         keypad_change_servo_start_pos(&servo_start, a, &previous);
         keypad_change_servo_stop_pos(&servo_stop, a, &previous);
         keypad_change_sample_rate(&samplerate, a, &previous);
+        average_calculator(us_dist_arr, ir_dist_arr, array_counter, &us_avg, &ir_avg);
         previous = keypad_check(a, previous);
+
         //distanceircalc();
         //RTC_AlarmIntConfig((LPC_RTC_TypeDef *) LPC_RTC, RTC_TIMETYPE_SECOND, ENABLE);
         //RTC_SetAlarmTime((LPC_RTC_TypeDef *) LPC_RTC, RTC_TIMETYPE_SECOND, 1);
@@ -174,7 +186,7 @@ int scan_mode(char previous){
 
 int multi_view_mode(char previous){
     sensor_changer(&sensor_selector, &previous);
-    lcd_display_top_row("Multi View");
+    lcd_display_top_row("Mult");
     lcd_display_bottom_row();
     
     char a = read_keypad(33);
@@ -210,7 +222,9 @@ int multi_view_mode(char previous){
         keypad_change_servo_start_pos(&servo_start, a, &previous);
         keypad_change_servo_stop_pos(&servo_stop, a, &previous);
         keypad_change_sample_rate(&samplerate, a, &previous);
+        average_calculator(us_dist_arr, ir_dist_arr, array_counter, &us_avg, &ir_avg);
         previous = keypad_check(a, previous);
+        
         //distanceircalc();
         //RTC_AlarmIntConfig((LPC_RTC_TypeDef *) LPC_RTC, RTC_TIMETYPE_SECOND, ENABLE);
         //RTC_SetAlarmTime((LPC_RTC_TypeDef *) LPC_RTC, RTC_TIMETYPE_SECOND, 1);
@@ -222,6 +236,7 @@ void sensor_changer(int* selector_value, char* previous_key){
     write_usb_serial_blocking("sensor changer\n\r", 16);
     char b = read_keypad(33);
     if (b == '1' && *previous_key != b){
+        clear_display(59);
         char port[1];
         sprintf(port, "%i", *selector_value);
         write_usb_serial_blocking(port, 1);
@@ -238,13 +253,12 @@ void sensor_changer(int* selector_value, char* previous_key){
 }
 
 void lcd_display_top_row(char* currentmode){
-    char reqspeedtodisplay[2];
-    char samplespersweeptodisplay[2];
-
-    int samplespersweep = 20;
+    char reqspeedtodisplay[3];
+    char samplespersweeptodisplay[5];
+    int samples_per_s = (int)1/((float)samplerate/1000000);
 
     sprintf(reqspeedtodisplay,"%i",turnspeed);
-    sprintf(samplespersweeptodisplay,"%i",samplespersweep);
+    sprintf(samplespersweeptodisplay,"%i",samples_per_s);
 
     int addr = 0x80;
     int i;
@@ -259,6 +273,8 @@ void lcd_display_top_row(char* currentmode){
     for (i = 0; i < strlen(samplespersweeptodisplay); i++){
         addr = alloc_lcd_addr(addr, i, samplespersweeptodisplay);
     }
+    addr = alloc_lcd_addr(addr, 0, "/");
+    addr = alloc_lcd_addr(addr, 0, "s");
 }
 
 
@@ -284,9 +300,9 @@ void lcd_display_bottom_row(){
 
     if (sensor_selector == 0){
 
-        rawvalue = get_data();
+        rawvalue = ir_raw;
 
-        int distance = ir_dist_arr[array_counter];
+        int distance = ir_dist;
         if (distance == -1){ 
             sprintf(distancetodisplay, "<%i", s);  
         }
@@ -303,26 +319,24 @@ void lcd_display_bottom_row(){
         for (i = 0; i < strlen(rawvaluetodisplay); i++){
             addr = alloc_lcd_addr(addr, i, rawvaluetodisplay);
         }
-        addr = alloc_lcd_addr(addr, 0, " ");
+        addr = alloc_lcd_addr(addr, 0, "/");
         for (i = 0; i < strlen(servoangletodisplay); i++){
             addr = alloc_lcd_addr(addr, i, servoangletodisplay);
         }
-        addr = alloc_lcd_addr(addr, 0, " ");
+        addr = alloc_lcd_addr(addr, 0, "/");
         for (i = 0; i < strlen(distancetodisplay); i++){
             addr = alloc_lcd_addr(addr, i, distancetodisplay);
         }
-        addr = alloc_lcd_addr(addr, 0, " ");
+        addr = alloc_lcd_addr(addr, 0, "/");
         for (i = 0; i < strlen(avgdistancetodisplay); i++){
             addr = alloc_lcd_addr(addr, i, avgdistancetodisplay);
         }
-        addr = alloc_lcd_addr(addr, 0, " ");
     }
 
     else{
 
-        int distance = us_dist_arr[array_counter];
-
-        sprintf(rawvaluetodisplay,"%i",us_raw_arr[array_counter]);
+        sprintf(distancetodisplay, "%i", us_dist);
+        sprintf(rawvaluetodisplay,"%i",us_raw);
         sprintf(servoangletodisplay,"%i",servoangle);
         sprintf(avgdistancetodisplay,"%i",us_avg);
 
@@ -332,19 +346,18 @@ void lcd_display_bottom_row(){
         for (i = 0; i < strlen(rawvaluetodisplay); i++){
             addr = alloc_lcd_addr(addr, i, rawvaluetodisplay);
         }
-        addr = alloc_lcd_addr(addr, 0, " ");
+        addr = alloc_lcd_addr(addr, 0, "/");
         for (i = 0; i < strlen(servoangletodisplay); i++){
             addr = alloc_lcd_addr(addr, i, servoangletodisplay);
         }
-        addr = alloc_lcd_addr(addr, 0, " ");
+        addr = alloc_lcd_addr(addr, 0, "/");
         for (i = 0; i < strlen(distancetodisplay); i++){
             addr = alloc_lcd_addr(addr, i, distancetodisplay);
         }
-        addr = alloc_lcd_addr(addr, 0, " ");
+        addr = alloc_lcd_addr(addr, 0, "/");
         for (i = 0; i < strlen(avgdistancetodisplay); i++){
             addr = alloc_lcd_addr(addr, i, avgdistancetodisplay);
         }
-        addr = alloc_lcd_addr(addr, 0, " ");
     }
 
     //int distance = distanceircalc();    
@@ -356,6 +369,20 @@ void average_calculator(int* us_arr, int* ir_arr, int counter, int* us_avg, int*
     int u;
     int us_total = 0;
     int ir_total = 0;
+    if (array_counter > 100){
+        clear_display(59);
+        array_counter = 0;
+        memset(ir_dist_arr, 0, sizeof(ir_dist_arr));
+        memset(us_dist_arr, 0, sizeof(us_dist_arr));
+        memset(ir_raw_arr, 0, sizeof(ir_raw_arr));
+        memset(us_raw_arr, 0, sizeof(us_raw_arr));
+        memset(time_arr, 0, sizeof(time_arr));
+        memset(angle_arr, 0, sizeof(angle_arr));
+        return;
+    }
+    else if (array_counter ==50){
+        clear_display(59);
+    }
     for (u = 0; u <= counter; u++){
         us_total += us_arr[u];
         ir_total += ir_arr[u];
@@ -409,11 +436,11 @@ void TIMER0_IRQHandler(void){
         num--;
         GPIO_ClearValue(2, pin);
         TIM_UpdateMatchValue(LPC_TIM0, 0, samplerate);
-        ir_dist_arr[array_counter] = distanceircalc();
+        ir_raw = get_data();
+        ir_dist = distanceircalc();
         angle_arr[array_counter] = ((count-8) * 9);
         time_arr[array_counter] = RTC_GetTime((LPC_RTC_TypeDef *) LPC_RTC, RTC_TIMETYPE_SECOND);
     }
-    average_calculator(us_dist_arr, ir_dist_arr, array_counter, &us_avg, &ir_avg);
     TIM_ResetCounter(LPC_TIM0);
 }
 
@@ -424,14 +451,13 @@ void TIMER2_IRQHandler(void){
 
 void TIMER3_IRQHandler(void){
     TIM_ClearIntCapturePending(LPC_TIM3, TIM_CR1_INT);
-    us_raw_arr[array_counter] = TIM_GetCaptureValue(LPC_TIM3, TIM_COUNTER_INCAP1);
+    us_raw = TIM_GetCaptureValue(LPC_TIM3, TIM_COUNTER_INCAP1);
     float length = ((((us_raw_arr[array_counter] - x)/2)/29.1)*100);
-    us_dist_arr[array_counter] = length;
+    us_dist = length;
     array_counter++;
-    char port[30] = "";
-    sprintf(port, "Ultrasonic: %.2f", length);
-    write_usb_serial_blocking(port, 30);
-    write_usb_serial_blocking("\n\r", 2);
+    //char port[30] = "";
+    //sprintf(port, "Ultrasonic: %.2f\n\r", (length - 3));
+    //write_usb_serial_blocking(port, 35);
     TIM_ResetCounter(LPC_TIM2);
     TIM_ResetCounter(LPC_TIM3);
 }
