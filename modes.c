@@ -233,7 +233,6 @@ int multi_view_mode(char previous){
 }
 
 void sensor_changer(int* selector_value, char* previous_key){
-    write_usb_serial_blocking("sensor changer\n\r", 16);
     char b = read_keypad(33);
     if (b == '1' && *previous_key != b){
         clear_display(59);
