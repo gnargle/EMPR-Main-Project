@@ -22,8 +22,8 @@ int count = 8;
 int turndir = 0;
 int turnspeed = 2;
 int sensor_selector = 0;
-int servo_start = 7;
-int servo_stop = 29;
+int servo_start = 8;
+int servo_stop = 28;
 
 int ir_dist = 0;
 int ir_raw = 0;
@@ -71,6 +71,7 @@ int calibration_mode(char previous){
         clear_display(59);
         char a = read_keypad(33);
         previous = keypad_check(a, previous);
+        count = 8
         return 2;
     }
     else if (a == 'D'&& previous != a){
@@ -78,6 +79,7 @@ int calibration_mode(char previous){
         clear_display(59);
         char a = read_keypad(33);
         previous = keypad_check(a, previous);
+        count = 8;
         return 3;
     }
     else{
@@ -117,6 +119,7 @@ int tape_measure_mode(char previous){
         clear_display(59);
         char a = read_keypad(33);
         previous = keypad_check(a, previous);
+        count = 8;
         return 2;
     }
     else if (a == 'D'&& previous != a){
@@ -124,6 +127,7 @@ int tape_measure_mode(char previous){
         clear_display(59);
         char a = read_keypad(33);
         previous = keypad_check(a, previous);
+        count = 8;
         return 3;
     }
     else{
@@ -160,6 +164,7 @@ int scan_mode(char previous){
         SYSTICK_IntCmd(ENABLE);
         char a = read_keypad(33);
         previous = keypad_check(a, previous);
+        count = 8;
         return 2;
     }
     else if (a == 'D'&& previous != a){
@@ -167,6 +172,7 @@ int scan_mode(char previous){
         clear_display(59);
         char a = read_keypad(33);
         previous = keypad_check(a, previous);
+        count = 8;
         return 3;
     }
     else{
@@ -209,12 +215,14 @@ int multi_view_mode(char previous){
         clear_display(59);
         char a = read_keypad(33);
         previous = keypad_check(a, previous);
+        count = 8;
         return 2;
     }
     else if (a == 'D'&& previous != a){
         SYSTICK_IntCmd(ENABLE);
         char a = read_keypad(33);
         previous = keypad_check(a, previous);
+        count = 8;
         return 3;
     }
     else{
