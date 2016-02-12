@@ -14,13 +14,13 @@ int calibration_mode(char previous);
 void lcd_display_bottom_row();
 void lcd_display_top_row(char* currentmode);
 void sensor_changer(int* selector_value, char* previous_key);
-
+void servoreset(void);
 //Variables used in systick handler
 
 int systick_count = 0;
 int count = 8;
 int turndir = 0;
-int turnspeed = 2;
+int turnspeed = 50;
 int sensor_selector = 0;
 int servo_start = 8;
 int servo_stop = 28;
@@ -36,7 +36,6 @@ int ir_dist_arr[100];
 int ir_raw_arr[100];
 int us_dist_arr[100];
 int us_raw_arr[100];
-
 int ir_avg;
 int us_avg;
 int array_counter = 0;
@@ -67,19 +66,19 @@ int calibration_mode(char previous){
         return 1;
     }
     else if (a == 'C'&& previous != a){
+        servoreset();
         SYSTICK_IntCmd(ENABLE);
         clear_display(59);
         char a = read_keypad(33);
         previous = keypad_check(a, previous);
-        count = 8
         return 2;
     }
     else if (a == 'D'&& previous != a){
+        servoreset();
         SYSTICK_IntCmd(ENABLE);
         clear_display(59);
         char a = read_keypad(33);
         previous = keypad_check(a, previous);
-        count = 8;
         return 3;
     }
     else{
@@ -115,19 +114,19 @@ int tape_measure_mode(char previous){
         return 1;
     }
     else if (a == 'C'&& previous != a){
+        servoreset();
         SYSTICK_IntCmd(ENABLE);
         clear_display(59);
         char a = read_keypad(33);
         previous = keypad_check(a, previous);
-        count = 8;
         return 2;
     }
     else if (a == 'D'&& previous != a){
+        servoreset();
         SYSTICK_IntCmd(ENABLE);
         clear_display(59);
         char a = read_keypad(33);
         previous = keypad_check(a, previous);
-        count = 8;
         return 3;
     }
     else{
@@ -161,18 +160,18 @@ int scan_mode(char previous){
         return 1;
     }
     else if (a == 'C'&& previous != a){
+        servoreset();
         SYSTICK_IntCmd(ENABLE);
         char a = read_keypad(33);
         previous = keypad_check(a, previous);
-        count = 8;
         return 2;
     }
     else if (a == 'D'&& previous != a){
+        servoreset();
         SYSTICK_IntCmd(ENABLE);
         clear_display(59);
         char a = read_keypad(33);
         previous = keypad_check(a, previous);
-        count = 8;
         return 3;
     }
     else{
@@ -211,18 +210,18 @@ int multi_view_mode(char previous){
         return 1;
     }
     else if (a == 'C'&& previous != a){
+        servoreset();
         SYSTICK_IntCmd(ENABLE);
         clear_display(59);
         char a = read_keypad(33);
         previous = keypad_check(a, previous);
-        count = 8;
         return 2;
     }
     else if (a == 'D'&& previous != a){
+        servoreset();
         SYSTICK_IntCmd(ENABLE);
         char a = read_keypad(33);
         previous = keypad_check(a, previous);
-        count = 8;
         return 3;
     }
     else{
@@ -407,8 +406,8 @@ void SysTick_Handler(void){
         }
         else{
             systick_count = 0;
-            PWM_MatchUpdate((LPC_PWM_TypeDef *) LPC_PWM1,2,count,PWM_MATCH_UPDATE_NOW);
             count++;
+            PWM_MatchUpdate((LPC_PWM_TypeDef *) LPC_PWM1,2,count,PWM_MATCH_UPDATE_NOW);
             if (count >=servo_stop){
                 //avgdistance = (sum / 20);
                 turndir = 1;
@@ -422,8 +421,8 @@ void SysTick_Handler(void){
         }
         else{
             systick_count = 0;
+                        count--;
             PWM_MatchUpdate((LPC_PWM_TypeDef *) LPC_PWM1,2,count,PWM_MATCH_UPDATE_NOW);
-            count--;
             if (count <=servo_start){
                 //avgdistance = (sum / 20);
                 turndir = 0;
@@ -431,7 +430,14 @@ void SysTick_Handler(void){
         }
     }
 }
-
+void servoreset(void){
+        turnspeed = 50;
+        turndir = 0;
+        systick_count = 0;
+        count = 8;
+        PWM_MatchUpdate((LPC_PWM_TypeDef *) LPC_PWM1,2,count,PWM_MATCH_UPDATE_NOW);
+        return;
+}
 void TIMER0_IRQHandler(void){
     TIM_ClearIntPending(LPC_TIM0, TIM_MR0_INT);
     if (num == 0){
