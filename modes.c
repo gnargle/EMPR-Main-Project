@@ -4,9 +4,9 @@
 #include "rtc.c"
 #include "pwm.c"
 #include "systick.c"
+#include <stdlib.h>
 #include <string.h>
 #include "timer.c"
-//#include "largelcd.c"
 
 int scan_mode(char previous);
 int tape_measure_mode(char previous);
@@ -29,6 +29,8 @@ int ir_dist = 0;
 int ir_raw = 0;
 int us_dist = 0;
 int us_raw = 0;
+int calibration_adjust = 0;
+int calib_tracker = 0;
 
 int time_arr[100];
 int angle_arr[100];
@@ -44,11 +46,13 @@ int num = 0;
 float x = 0;
 float y = 0;
 
+//////////////////////////////////////////////////////////////
+//                  MAIN MODES                              //
+//////////////////////////////////////////////////////////////
+
 int calibration_mode(char previous){
-    sensor_changer(&sensor_selector, &previous);
+    sensor_changer_cali_mode(&sensor_selector, &previous);
     count = 18;
-    lcd_display_top_row("Cali");
-    lcd_display_bottom_row();
     
 
     char a = read_keypad(33);
@@ -82,10 +86,78 @@ int calibration_mode(char previous){
         return 3;
     }
     else{
+        int calib_arr[3];
+        int ir_reported;
+        int us_reported;
+        int calib_val;
+        int u = 0;
+        char write[2];
+        strcpy(write, "");
+        while(calib_tracker <3){
+            if (u == 1000){
+                int addr = 0x80;
+                int i;
+                for(i=0; i < strlen("Input actual dist: "); i++){
+                    addr = alloc_lcd_addr(addr, i, "Input actual dist: ");
+                }
+                for(i=0; i < strlen(write); i++){
+                    addr = alloc_lcd_addr(addr, i, write);
+                }
+                char x;
+                x = read_keypad(33);
+                if (x == previous){
+                    previous = x;
+                }
+                else if (x != 'Z' && x != previous){
+                    if (x == 'A'){
+                        clear_display(59);
+                        strcpy(write, "");
+                        previous = x;
+                    }
+                    else if (isalpha(x) || x == '*' || isdigit(x)){
+                        addr = 0x80;
+                        append(write, x);
+                        clear_display(59);
+                        for(i=0; i < strlen("Input actual dist: "); i++){
+                            addr = alloc_lcd_addr(addr, i, "Input actual dist: ");
+                        }
+                        for(i=0; i < strlen(write); i++){
+                            addr = alloc_lcd_addr(addr, i, write);
+                        }
+                        previous = x;
+                    }
+                    else if(x == '#'){
+                        clear_display(59);
+                        int act_val = atoi(write);   
+                        ir_reported = ir_dist;
+                        us_reported = us_dist;
+                        calib_val = ((ir_reported - act_val) + (us_reported - act_val))/2;
+                        calib_arr[calib_tracker] = calib_val;
+                        calib_tracker++;
+                        strcpy(write, "");
+                        previous = x;
+                    }
+                }
+                else if (x == 'Z' && previous != 'Z'){
+                    previous = 'Z';
+                }
+            }
+            else{
+                u++;
+            }
+        }
+        int calib_total = 0;
+        for (calib_tracker = 0; calib_tracker <3; calib_tracker++){
+            calib_total += calib_arr[calib_tracker];
+        }
+        calibration_adjust = calib_total/3;
+
+        lcd_display_top_row("Cali");
+        lcd_display_bottom_row();
         //distanceircalc();
         //RTC_AlarmIntConfig((LPC_RTC_TypeDef *) LPC_RTC, RTC_TIMETYPE_SECOND, DISABLE);
         PWM_MatchUpdate((LPC_PWM_TypeDef *) LPC_PWM1,2,18,PWM_MATCH_UPDATE_NOW);
-        keypad_change_sample_rate(&samplerate, a, &previous);
+        //keypad_change_sample_rate(&samplerate, a, &previous);
         average_calculator(us_dist_arr, ir_dist_arr, array_counter, &us_avg, &ir_avg);
         previous = keypad_check(a, previous);
         return 0;
@@ -239,6 +311,10 @@ int multi_view_mode(char previous){
     }
 }
 
+//////////////////////////////////////////////////////////////
+//                  IR/US SENSOR SWITCHER                   //
+//////////////////////////////////////////////////////////////
+
 void sensor_changer(int* selector_value, char* previous_key){
     char b = read_keypad(33);
     if (b == '1' && *previous_key != b){
@@ -257,6 +333,29 @@ void sensor_changer(int* selector_value, char* previous_key){
         }        
     }         
 }
+
+void sensor_changer_cali_mode(int* selector_value, char* previous_key){
+    char b = read_keypad(33);
+    if (b == '*' && *previous_key != b){
+        clear_display(59);
+        char port[1];
+        sprintf(port, "%i", *selector_value);
+        write_usb_serial_blocking(port, 1);
+        *previous_key = b;
+        if (*selector_value == 0){
+                *selector_value = 1;
+                return;
+        }
+        else {
+                *selector_value = 0;
+                return;
+        }        
+    }         
+}
+
+//////////////////////////////////////////////////////////////
+//                  LCD DISPLAY FUNCTIONS                   //
+//////////////////////////////////////////////////////////////
 
 void lcd_display_top_row(char* currentmode){
     char reqspeedtodisplay[3];
@@ -370,6 +469,10 @@ void lcd_display_bottom_row(){
     
 }
 
+//////////////////////////////////////////////////////////////
+//                  GENERAL FUNCTIONS                       //
+//////////////////////////////////////////////////////////////
+
 void average_calculator(int* us_arr, int* ir_arr, int counter, int* us_avg, int* ir_avg){
 
     int u;
@@ -397,6 +500,26 @@ void average_calculator(int* us_arr, int* ir_arr, int counter, int* us_avg, int*
     *us_avg = (us_total/counter +1);
     return;
 }
+
+void append(char* s, char c){
+    int len = strlen(s);
+    s[len] = c;
+    s[len+1] = '\0';
+}
+
+void servoreset(void){
+        turnspeed = 50;
+        turndir = 0;
+        systick_count = 0;
+        count = 8;
+        PWM_MatchUpdate((LPC_PWM_TypeDef *) LPC_PWM1,2,count,PWM_MATCH_UPDATE_NOW);
+        return;
+}
+
+
+//////////////////////////////////////////////////////////////
+//                  INTERRUPT REQUEST HANDLERS              //
+//////////////////////////////////////////////////////////////
 
 void SysTick_Handler(void){
     if(turndir == 0){
@@ -430,14 +553,7 @@ void SysTick_Handler(void){
         }
     }
 }
-void servoreset(void){
-        turnspeed = 50;
-        turndir = 0;
-        systick_count = 0;
-        count = 8;
-        PWM_MatchUpdate((LPC_PWM_TypeDef *) LPC_PWM1,2,count,PWM_MATCH_UPDATE_NOW);
-        return;
-}
+
 void TIMER0_IRQHandler(void){
     TIM_ClearIntPending(LPC_TIM0, TIM_MR0_INT);
     if (num == 0){
@@ -450,7 +566,7 @@ void TIMER0_IRQHandler(void){
         GPIO_ClearValue(2, pin);
         TIM_UpdateMatchValue(LPC_TIM0, 0, samplerate);
         ir_raw = get_data();
-        ir_dist = distanceircalc();
+        ir_dist = distanceircalc() + calibration_adjust;
         angle_arr[array_counter] = ((count-8) * 9);
         time_arr[array_counter] = RTC_GetTime((LPC_RTC_TypeDef *) LPC_RTC, RTC_TIMETYPE_SECOND);
     }
@@ -466,7 +582,7 @@ void TIMER3_IRQHandler(void){
     TIM_ClearIntCapturePending(LPC_TIM3, TIM_CR1_INT);
     us_raw = TIM_GetCaptureValue(LPC_TIM3, TIM_COUNTER_INCAP1);
     float length = ((((us_raw_arr[array_counter] - x)/2)/29.1)*100);
-    us_dist = length;
+    us_dist = length + calibration_adjust;
     array_counter++;
     //char port[30] = "";
     //sprintf(port, "Ultrasonic: %.2f\n\r", (length - 3));

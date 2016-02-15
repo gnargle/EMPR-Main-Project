@@ -1,6 +1,2 @@
 /.project
 /.largelcd.c
-/.main.o
-bin/lpc1700.map
-bin/main
-bin/main.bin

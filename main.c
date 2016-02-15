@@ -28,7 +28,6 @@ int main(void){
     I2C_Cmd(usedi2c, ENABLE);
     display_init(59);
     keypad_init(33);
-    //lrg_screen_init(39);
     SYSTICK_IntCmd(DISABLE);
     calibration_mode(previous);
     while(1){
@@ -47,16 +46,3 @@ int main(void){
         us_raw_arr[array_counter] = us_raw;
     }
 }
-
-/*//
-void RTC_IRQHandler(void){
-    write_usb_serial_blocking("interrupt\n\r", 11);
-    PWM_MatchUpdate((LPC_PWM_TypeDef *) LPC_PWM1,2,count,PWM_MATCH_UPDATE_NOW);
-    count++;
-    if (count >=31){
-        count = 8;
-    }
-    RTC_SetTime((LPC_RTC_TypeDef *)LPC_RTC, RTC_TIMETYPE_SECOND, 0);
-    RTC_SetAlarmTime((LPC_RTC_TypeDef *) LPC_RTC, RTC_TIMETYPE_SECOND, 1);
-    RTC_ClearIntPending((LPC_RTC_TypeDef *)LPC_RTC, RTC_INT_ALARM);
-}*/
