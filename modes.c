@@ -31,6 +31,8 @@ int us_dist = 0;
 int us_raw = 0;
 int calibration_adjust = 0;
 int calib_tracker = 0;
+int calib_total = 0;
+int calibrated_flag = 0;
 
 int time_arr[100];
 int angle_arr[100];
@@ -51,8 +53,9 @@ float y = 0;
 //////////////////////////////////////////////////////////////
 
 int calibration_mode(char previous){
-    sensor_changer_cali_mode(&sensor_selector, &previous);
+    sensor_changer(&sensor_selector, &previous);
     count = 18;
+    PWM_MatchUpdate((LPC_PWM_TypeDef *) LPC_PWM1,2,18,PWM_MATCH_UPDATE_NOW);
     
 
     char a = read_keypad(33);
@@ -95,6 +98,7 @@ int calibration_mode(char previous){
         strcpy(write, "");
         while(calib_tracker <3){
             if (u == 1000){
+                sensor_changer_cali_mode(&sensor_selector, &previous);
                 int addr = 0x80;
                 int i;
                 for(i=0; i < strlen("Input actual dist: "); i++){
@@ -128,10 +132,21 @@ int calibration_mode(char previous){
                     }
                     else if(x == '#'){
                         clear_display(59);
-                        int act_val = atoi(write);   
+                        int act_val = atoi(write);  
                         ir_reported = ir_dist;
+                        char port[3] = "";
+                        sprintf(port, "%i", ir_reported);
+                        write_usb_serial_blocking("ir_report: ", 11);
+                        write_usb_serial_blocking(port, 3);
+                        write_usb_serial_blocking("\n\r", 2); 
                         us_reported = us_dist;
-                        calib_val = ((ir_reported - act_val) + (us_reported - act_val))/2;
+                        char port1[3] = "";
+                        sprintf(port1, "%i", us_reported);
+                        write_usb_serial_blocking("us_report: ", 11);
+                        write_usb_serial_blocking(port1, 3);
+                        write_usb_serial_blocking("\n\r", 2); 
+                        calib_val = (ir_reported - act_val);
+                        //calib_val = ((ir_reported - act_val) + (us_reported - act_val))/2;
                         calib_arr[calib_tracker] = calib_val;
                         calib_tracker++;
                         strcpy(write, "");
@@ -146,17 +161,28 @@ int calibration_mode(char previous){
                 u++;
             }
         }
-        int calib_total = 0;
-        for (calib_tracker = 0; calib_tracker <3; calib_tracker++){
-            calib_total += calib_arr[calib_tracker];
+        if (calibrated_flag == 0){
+            for (calib_tracker = 0; calib_tracker <3; calib_tracker++){
+                calib_total += calib_arr[calib_tracker];
+            }
+            calibrated_flag = 1;
+            calibration_adjust = calib_total/3;
+            char port1[3] = "";
+            sprintf(port1, "%i", calib_total);
+            write_usb_serial_blocking("total: ", 5);
+            write_usb_serial_blocking(port1, 3);
+            write_usb_serial_blocking("\n\r", 2);
+            char port[3] = "";
+            sprintf(port, "%i", calibration_adjust);
+            write_usb_serial_blocking("adjust: ", 6);
+            write_usb_serial_blocking(port, 3);
+            write_usb_serial_blocking("\n\r", 2);
         }
-        calibration_adjust = calib_total/3;
 
         lcd_display_top_row("Cali");
         lcd_display_bottom_row();
         //distanceircalc();
         //RTC_AlarmIntConfig((LPC_RTC_TypeDef *) LPC_RTC, RTC_TIMETYPE_SECOND, DISABLE);
-        PWM_MatchUpdate((LPC_PWM_TypeDef *) LPC_PWM1,2,18,PWM_MATCH_UPDATE_NOW);
         //keypad_change_sample_rate(&samplerate, a, &previous);
         average_calculator(us_dist_arr, ir_dist_arr, array_counter, &us_avg, &ir_avg);
         previous = keypad_check(a, previous);
@@ -544,7 +570,7 @@ void SysTick_Handler(void){
         }
         else{
             systick_count = 0;
-                        count--;
+            count--;
             PWM_MatchUpdate((LPC_PWM_TypeDef *) LPC_PWM1,2,count,PWM_MATCH_UPDATE_NOW);
             if (count <=servo_start){
                 //avgdistance = (sum / 20);
@@ -566,7 +592,7 @@ void TIMER0_IRQHandler(void){
         GPIO_ClearValue(2, pin);
         TIM_UpdateMatchValue(LPC_TIM0, 0, samplerate);
         ir_raw = get_data();
-        ir_dist = distanceircalc() + calibration_adjust;
+        ir_dist = distanceircalc(); + calibration_adjust;
         angle_arr[array_counter] = ((count-8) * 9);
         time_arr[array_counter] = RTC_GetTime((LPC_RTC_TypeDef *) LPC_RTC, RTC_TIMETYPE_SECOND);
     }
@@ -582,11 +608,11 @@ void TIMER3_IRQHandler(void){
     TIM_ClearIntCapturePending(LPC_TIM3, TIM_CR1_INT);
     us_raw = TIM_GetCaptureValue(LPC_TIM3, TIM_COUNTER_INCAP1);
     float length = ((((us_raw_arr[array_counter] - x)/2)/29.1)*100);
-    us_dist = length + calibration_adjust;
+    us_dist = length; + calibration_adjust;
     array_counter++;
-    //char port[30] = "";
-    //sprintf(port, "Ultrasonic: %.2f\n\r", (length - 3));
-    //write_usb_serial_blocking(port, 35);
+    //char port[10] = "";
+    //sprintf(port, "%.2f\n\r", (length - 3));
+    //write_usb_serial_blocking(port, 10);
     TIM_ResetCounter(LPC_TIM2);
     TIM_ResetCounter(LPC_TIM3);
 }

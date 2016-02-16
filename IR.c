@@ -60,14 +60,10 @@ int distanceircalc(void){
     if (x <= 2630 && x > 0){
         char port[6] = "";
             sprintf(port, "%i", x);
-            write_usb_serial_blocking(port, 6);
-            write_usb_serial_blocking("\n\r", 2);
+            //write_usb_serial_blocking(port, 6);
+            //write_usb_serial_blocking("\n\r", 2);
         }
     else {
-        char port[3] = "";
-            sprintf(port, "%s", s);
-            write_usb_serial_blocking(port, 3);
-            write_usb_serial_blocking("\n\r", 2);
             return -1;
     }
     return x;
