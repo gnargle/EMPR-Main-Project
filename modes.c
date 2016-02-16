@@ -33,6 +33,9 @@ int calibration_adjust = 0;
 int calib_tracker = 0;
 int calib_total = 0;
 int calibrated_flag = 0;
+int act_val;
+int servoangle;
+int sweep_num;
 
 int time_arr[100];
 int angle_arr[100];
@@ -291,7 +294,8 @@ int multi_view_mode(char previous){
     sensor_changer(&sensor_selector, &previous);
     lcd_display_top_row("Mult");
     lcd_display_bottom_row();
-    
+    //use sweep_num to see what stage of 'turning' the object is at    
+
     char a = read_keypad(33);
     if (a == 'A'&& previous != a){
         SYSTICK_IntCmd(DISABLE);
@@ -414,7 +418,6 @@ void lcd_display_bottom_row(){
     char servoangletodisplay[3];
     char distancetodisplay[3];
     char avgdistancetodisplay[3];
-    int servoangle;
     int rawvalue;
     int s = 7;
     //Calculating angle of servo
@@ -595,6 +598,9 @@ void TIMER0_IRQHandler(void){
         ir_dist = distanceircalc(); + calibration_adjust;
         angle_arr[array_counter] = ((count-8) * 9);
         time_arr[array_counter] = RTC_GetTime((LPC_RTC_TypeDef *) LPC_RTC, RTC_TIMETYPE_SECOND);
+        char port[60] = "";
+        sprintf(port, ";%i;%i;%i;%i;%i;%i;%i;%i;%i;\n\r", ir_raw, us_raw, ir_dist, us_dist, servoangle, servo_stop, servo_start, act_val, sweep_num);
+        write_usb_serial_blocking(port ,60);
     }
     TIM_ResetCounter(LPC_TIM0);
 }
@@ -610,9 +616,6 @@ void TIMER3_IRQHandler(void){
     float length = ((((us_raw_arr[array_counter] - x)/2)/29.1)*100);
     us_dist = length; + calibration_adjust;
     array_counter++;
-    //char port[10] = "";
-    //sprintf(port, "%.2f\n\r", (length - 3));
-    //write_usb_serial_blocking(port, 10);
     TIM_ResetCounter(LPC_TIM2);
     TIM_ResetCounter(LPC_TIM3);
 }
