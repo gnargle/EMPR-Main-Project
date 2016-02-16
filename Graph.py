@@ -3,16 +3,152 @@ from pygame.locals import *
 import serial #getting data from mbed
 import sys,os #exiting graph
 import math #maths calculations
+from threading import *
 
-colour = (255,255,255) #background colour
+##############################################
+#                    MAIN                    #
+##############################################
+'''def start_threading():
+    t1 = Thread(target=Serialdata, args=())
+    #t1.daemon = True
+    t1.start()'''
 
+def Serialdata(mbed):
+	global ir_raw, us_raw, ir, us, max_rot, min_rot, cal_point, sweep_num, line,count
+	'''if os.path.exists("data.tmp") == True:
+        os.remove("data.tmp")
+    mbed = serial.Serial()
+    mbed.port = "/dev/ttyACM0"
+    mbed.bytesize = serial.EIGHTBITS
+    mbed.parity = serial.PARITY_NONE
+    mbed.stopbits = serial.STOPBITS_ONE
+    #t2 = Thread(target=main, args=())
+    #t2.daemon = True
+    #t2.start()'''
+    #while(1):
+	if count % 2 == 0:
+		mbed.open()
+		x = mbed.readline()
+		x = x.strip()
+		vals = x.split(';', 10)
+		print vals
+		ir_raw = int(vals[1])
+		us_raw = int(vals[2])
+		ir = int(vals[3])
+		us = int(vals[4])
+		angle = int(vals[5])
+		max_rot = int(vals[6])
+		min_rot = int(vals[7])
+		cal_point = int(vals[8])
+		sweep_num = int(vals[9])
+		nums = vals[1:10]
+		numbers = str(line) + ":"
+		for a in range (9):
+			if a == 8:
+				numbers += nums[a]
+			else:
+				numbers += nums[a] + ":"
+		f = open('data.tmp', 'a')
+		lst = [numbers, "\n"]
+		f.writelines(lst)
+		f.close()
+		mbed.close()
+		line += 1	
+	else:
+		pass
+	count += 1
+
+def main():
+	global mode
+	if os.path.exists("data.tmp") == True:
+		os.remove("data.tmp")
+	mbed = serial.Serial()
+	mbed.port = "/dev/ttyACM0"
+	mbed.bytesize = serial.EIGHTBITS
+	mbed.parity = serial.PARITY_NONE
+	mbed.stopbits = serial.STOPBITS_ONE
+	done = False
+	while not done:
+		Serialdata(mbed)
+		for event in pygame.event.get():
+			if event.type == QUIT:
+				done = True
+				pygame.quit()
+		screen.fill((0,0,0))      
+		if mode == "tape":  
+			draw_tapemeasureplot()  
+		elif mode == "overhead":
+			draw_overheadplot()
+		elif mode == "radar":
+			draw_radarplot()
+		elif mode == "multi":
+			draw_multiviewplot()   
+		pygame.display.update() #update screen needs to be outside loop or will only update on click        
+
+##############################################
+#                TAPEMEASURE                 #
+##############################################
+def draw_tapemeasureplot():  #tape measure mode 
+    global font,us_raw, ir_raw, ir, us, screen, cal_point
+    if sensor == "ir":
+        distance = ir
+    elif sensor == "us":
+        distance = us    
+    point = cal_point
+    step = 7
+    pygame.display.set_caption("Tape Measure Mode")
+    if distance <= 0: #draws graph grid to screen
+        s = pygame.Surface((0,300))
+    elif distance > 700: 
+        s = pygame.Surface((700,300))
+    else:
+        s = pygame.Surface((distance,300))
+        lines.append(((50 + distance, 200)))
+        if len(lines) >= 2:
+            draw_lines(lines)     
+    s.fill(100)
+    screen.blit(s,(50,50))
+    q = 110
+    y = 10
+    draw_buttons()
+    set_calibrationpoints(point,step)
+    numbers = font.render(str(0), True, colour)
+    screen.blit(numbers, (45,25))
+    numbers = font.render(str(100), True, colour)
+    screen.blit(numbers, (725,25))
+
+    for x in range(9):
+        numbers = font.render(str(y), True, colour)
+        screen.blit(numbers, (q-3,25))
+        q += 70
+        y += 10
+    x = 85
+    count = 1
+    pygame.draw.rect(screen ,colour, (50,50,700,300), 4) #draws bargraph to screen
+    while x < 735:   
+        if (count % 2 == 0):
+            pygame.draw.line(screen, colour, (x, 50), (x,350),3)
+        else:    
+            pygame.draw.line(screen, colour, (x, 50), (x,350),1)
+        x += 35
+        count += 1
+    '''if len(lines) >= 2:
+            draw_lines(lines)'''  
+
+def set_calibrationpoints(points,step): #choose what the calibration points are
+            pygame.draw.polygon(screen, (0,255,0), ((45+(points*step), 370), (55+(points*step), 370), (55+(points*step), 360), (60+(points*step), 360), (50+(points*step), 350), (40+(points*step), 360), (45+(points*step), 360))) 
+
+##############################################
+#                  OVERHEAD                  #
+##############################################
 def draw_overheadplot(): #overhead plot
-    global us_raw, ir_raw, pointlist, a
+    global us, ir,ir_raw,us_raw, a, sensor, screen, pointlist # need to set points list to zero after mode changes
     pygame.display.set_caption("Overhead Mode") #set title
+    z = 0
     if sensor == "us":
-        z = us_raw * 2
+        z = us * 2
     elif sensor == "ir":
-        z = ir_raw * 2
+        z = ir * 2
 
     if a >= 700: #catches out of bounds
         a = 700
@@ -63,24 +199,18 @@ def draw_overheadplot(): #overhead plot
     while y < 370:
         pygame.draw.line(screen, (0,51,102), (50,y),(750,y),1 )
         y+=20
-    draw_buttons()     
-
-def set_calibrationpoints(points,step): #choose what the calibration points are
-    for val in points:
-        if val % 10 == 0:
-            #val = val #work math out
-            pygame.draw.polygon(screen, (0,255,0), ((45+(val*step), 370), (55+(val*step), 370), (55+(val*step), 360), (60+(val*step), 360), (50+(val*step), 350), (40+(val*step), 360), (45+(val*step), 360)))
-        else:
-            print( "Please enter a number divisble by 5!")
-        
-def draw_radarplot(angle): #radar mode
-    global ir_raw, us_raw
+    draw_buttons()
+##############################################
+#                   RADAR                    #
+##############################################
+def draw_radarplot(): #radar mode
+    global angle, max_rot, min_rot, us, ir, us_raw, ir_raw, sensor, mode
     pygame.display.set_caption("Radar Mode")
-    angle = angle + 180
+    radarangle = angle + 180
     if sensor == "ir":
-        distance = ir_raw * 2
+        distance = ir * 2
     elif sensor == "us":
-        distance = us_raw * 2
+        distance = us * 2    
     z = 10
     pygame.draw.line(screen, (0,51,102), (400, 400), (400, 30), 2)
     pygame.draw.line(screen, (0,51,102), (30, 400), (770, 400), 8)
@@ -97,71 +227,23 @@ def draw_radarplot(angle): #radar mode
     draw_buttons()
     if distance >= 370: #catches out of bounds
         distance = 370
-        if angle <= 180:
-            angle = 0
-        elif angle >= 360:
-            angle = 180  
+        if radarangle <= 180:
+            radarangle = 0
+        elif radarangle >= 360:
+            radarangle = 180  
     elif distance <= 0:
         distance = 0
-        if angle <= 180:
-            angle = 0
-        elif angle >= 360:
-            angle = 180  
-    elif angle <= 180:
-        angle = 0
-    elif angle >= 360:
-        angle = 180        
+        if radarangle <= 180:
+            radarangle = 0
+        elif radarangle >= 360:
+            radarangle = 180  
+    elif radarangle <= 180:
+        radarangle = 0
+    elif radarangle >= 360:
+        radarangle = 180        
 
-    plotoncircle(400,400,distance,angle) # 270 == 90, 180 == 0, 360 = 180 need to add 180 to angle    
+    plotoncircle(400,400,distance,radarangle) # 270 == 90, 180 == 0, 360 = 180 need to add 180 to angle    
 
-def draw_tapemeasureplot():  #tape measure mode 
-    global us_raw, ir_raw
-    font = pygame.font.SysFont("Arial", 25) #number font 
-    points = [0,10,20,30,40,50,60,70,80,90,100]
-    step = 7
-    pygame.display.set_caption("Tape Measure Mode")
-    if sensor == "ir":
-        distance = ir_raw
-    elif sensor == "us":
-        distance = us_raw
-    if distance <= 0: #draws graph grid to screen
-        s = pygame.Surface((0,300))
-    elif distance > 700: 
-        s = pygame.Surface((700,300))
-    else:
-        s = pygame.Surface((distance,300))
-        lines.append(((50 + distance, 200)))
-        if len(lines) >= 2:
-            draw_lines(lines)     
-    s.fill(100)
-    screen.blit(s,(50,50))
-    q = 110
-    y = 10
-    draw_buttons()
-    set_calibrationpoints(points,step)
-    numbers = font.render(str(0), True, colour)
-    screen.blit(numbers, (45,25))
-    numbers = font.render(str(100), True, colour)
-    screen.blit(numbers, (725,25))
-
-    for x in range(9):
-        numbers = font.render(str(y), True, colour)
-        screen.blit(numbers, (q-3,25))
-        q += 70
-        y += 10
-    x = 85
-    count = 1
-    pygame.draw.rect(screen ,colour, (50,50,700,300), 4) #draws bargraph to screen
-    while x < 735:   
-        if (count % 2 == 0):
-            pygame.draw.line(screen, colour, (x, 50), (x,350),3)
-        else:    
-            pygame.draw.line(screen, colour, (x, 50), (x,350),1)
-        x += 35
-        count += 1
-    if len(lines) >= 2:
-            draw_lines(lines)    
-    
 def plotoncircle(xcenter, ycenter, distance, angle): #math for moving around a circle
     angle = math.radians(angle) #convert degrees to radians
     x0 = xcenter #sets center need to translate to
@@ -169,17 +251,20 @@ def plotoncircle(xcenter, ycenter, distance, angle): #math for moving around a c
     x = x0 + (distance * math.cos(angle)) #trig on the point
     y = y0 + (distance * math.sin(angle))
     plot_point(x,y)
-
+            
+##############################################
+#                 MULTIVIEW                  #
+##############################################
 def draw_multiviewplot(): #multiview mode
-    global sweeps, ir, us, angle
+    global mode, sensor, ir, us, us_raw, ir_raw, max_rot, min_rot, sweep_num, angle
     if sensor == "ir":
-        distance = ir_raw
+        distance = ir
     elif sensor == "us":
-        distance == us_raw
+        distance = us
+    multiangle = angle     
     pygame.display.set_caption("Multiview Mode")
     pygame.draw.line(screen, (0,51,102), (400,40), (400,360),3)
     pygame.draw.line(screen, (0,51,102), (560,200), (240,200),3)
-    
     pygame.draw.circle(screen, (0,128,255), (400, 200), 150, 2)
     pygame.draw.circle(screen, (0,128,255), (400, 200), 125, 1)
     pygame.draw.circle(screen, (0,128,255), (400, 200), 100, 2)
@@ -187,47 +272,47 @@ def draw_multiviewplot(): #multiview mode
     pygame.draw.circle(screen, (0,128,255), (400, 200), 50, 2)
     pygame.draw.circle(screen, (0,128,255), (400, 200), 25, 1)
 
-    if sweeps == 0: #180 -> 0 #need to do angle bounds
+    if sweep_num == 0: #180 -> 0 #need to do angle bounds
         if distance >= 150:
             distance = 150
         elif distance <= 0:
             distance = 0    
-        angle = abs(angle - 180)
-        angle = math.radians(angle)
-        x = 400 + (distance * math.cos(angle)) #trig on the point
-        y = 200 - (distance * math.sin(angle))
+        multiangle = abs(multiangle - 180)
+        multiangle = math.radians(multiangle)
+        x = 400 + (distance * math.cos(multiangle)) #trig on the point
+        y = 200 - (distance * math.sin(multiangle))
         plot_point(x,y)             
     
-    elif sweeps == 1: #270 -> 90
+    elif sweep_num == 1: #270 -> 90
         if distance >= 150:
             distance = 150
         elif distance <= 0:
             distance = 0   
-        angle = abs(angle - 270)
-        angle = math.radians(angle)
-        x = 400 - (distance * math.cos(angle)) #trig on the point
-        y = 200 + (distance * math.sin(angle))
+        multiangle = abs(multiangle - 270)
+        multiangle = math.radians(multiangle)
+        x = 400 - (distance * math.cos(multiangle)) #trig on the point
+        y = 200 + (distance * math.sin(multiangle))
         plot_point(x,y) 
         
-    elif sweeps == 2: #0 -> 180
+    elif sweep_num == 2: #0 -> 180
         if distance >= 150:
             distance = 150
         elif distance <= 0:
             distance = 0   
-        angle = math.radians(angle)
-        x = 400 + (distance * math.cos(angle)) #trig on the point
-        y = 200 + (distance * math.sin(angle))
+        multiangle = math.radians(multiangle)
+        x = 400 + (distance * math.cos(multiangle)) #trig on the point
+        y = 200 + (distance * math.sin(multiangle))
         plot_point(x,y)  
     
-    elif sweeps == 3: #90 -> 270
+    elif sweep_num == 3: #90 -> 270
         if distance >= 150:
             distance = 150
         elif distance <= 0:
             distance = 0   
-        angle = abs(270 - angle)
-        angle = math.radians(angle)
-        x = 400 + (distance * math.cos(angle)) #trig on the point
-        y = 200 - (distance * math.sin(angle))
+        multiangle = abs(270 - multiangle)
+        multiangle = math.radians(multiangle)
+        x = 400 + (distance * math.cos(multiangle)) #trig on the point
+        y = 200 - (distance * math.sin(multiangle))
         plot_point(x,y) 
     
     else:
@@ -235,8 +320,12 @@ def draw_multiviewplot(): #multiview mode
 
     draw_buttons()
 
+##############################################
+#              BUTTONS AND LINES             #
+##############################################
+
 def button(x,y,w,h,r1,g1,b1,r2,g2,b2,m,name,yname,xname,mouse0,mouse1,click,font):
-    global mode
+    global mode,sensor
     if x+w > mouse0 > x and y+h > mouse1 > y:
         pygame.draw.rect(screen, (r1,g1,b1), (x, y, w, h))
         if click == 1:
@@ -253,8 +342,8 @@ def button(x,y,w,h,r1,g1,b1,r2,g2,b2,m,name,yname,xname,mouse0,mouse1,click,font
 
 
 def draw_buttons(): #check poisiton values so in middle of boxes
-    global mode
-    buttonfont = pygame.font.SysFont("Arial", 10)
+    global mode,buttonfont
+   
     mouse = pygame.mouse.get_pos()
     click = pygame.mouse.get_pressed()    
     if mode == "radar": #dont do anything until mouse released
@@ -279,87 +368,32 @@ def plot_point(xcenter,ycenter): #draws cross point
 def draw_lines(lines): #draw overheadlines
     pygame.draw.lines(screen, (255,51,51), False, lines,2)
 
-    
-
-   
-def get_Serialdata(): #get data from mbed
-    global line, ir_raw, us_raw, ir, us, angle, max_rot, min_rot, cal_point, sweeps
-    mbed.open()
-    x = mbed.readline()
-    print(x)
-    #x = x.strip()
-    vals = x.split(';', 10)
-    print(vals)
-    ir_raw = int(vals[1])
-    us_raw = int(vals[2])
-    ir = int(vals[3])
-    us = int(vals[4])
-    angle = int(vals[5])
-    max_rot = int(vals[6])
-    min_rot = int(vals[7])
-    cal_point = int(vals[8])
-    sweeps = int(vals[9])
-    nums = vals[1:10]
-    numbers = str(line) + ":"
-    for a in range (9):
-        if a == 8:
-            numbers += nums[a]
-        else:
-            numbers += nums[a] + ":"
-    f = open('data.tmp', 'a')
-    lst = [numbers, "\n"]
-    f.writelines(lst)
-    f.close()
-    mbed.close()
-    line += 1
-
-#os.remove("data.tmp")
-mbed = serial.Serial()
-mbed.port = "/dev/ttyACM0"
-mbed.bytesize = serial.EIGHTBITS
-mbed.parity = serial.PARITY_NONE
-mbed.stopbits = serial.STOPBITS_ONE
-
-ir_raw = 0
-us_raw = 0
-ir = 0
-us = 0
-angle = 0
-max_rot = 0
-min_rot = 0
-cal_point = 0
-sweeps = 0
-a = 0 #var for x val point
-lines = [] #make lines global for draw
+##############################################
+#                  GLOBALS                   #
+##############################################
+count = 0
 pygame.init() #essential 
+colour = (255,255,255) #background colour
+buttonfont = pygame.font.SysFont("Arial", 10) #buttons font
+font = pygame.font.SysFont("Arial", 25) #number font 
 sensor = "ir" #initial sensor
 mode = "tape" #initial mode 
-pointlist = [] #points 
-pygame.mouse.set_visible(1) #enables use of mouse
+ir_raw = 0 #current raw ir
+us_raw = 0 #current raw us
+ir = 0 #current ir
+us = 0 #current us
+angle = 0 #current angle
+max_rot = 0 #max rotation - multiview and radar mode
+min_rot = 0 #min rotation - multiview and radar mode
+cal_point = 0 #for cal mode a single calibration point
+sweep_num = 0 #sweep its on for multiview mode
+a = 0 #overhead x val point
+line = 0
+lines = []   #line in saved file
+pointlist = [] #points for line to draw between
 screen=pygame.display.set_mode((800,400)) #set and lock display size do not change as math is dependant on size
-count = 0    
-line = 1     
-done = False
-while not done:
-    
+pygame.mouse.set_visible(1) #enables use of mouse
+#start_threading()
+#Serialdata()
+main()
 
-    for event in pygame.event.get():
-        if event.type == QUIT:
-            done = True
-            pygame.quit()
-    
-    screen.fill((0,0,0))
-    if count %75 == 0: 
-        get_Serialdata()
-    count +=1       
-    if mode == "tape":   
-        draw_tapemeasureplot()  
-    elif mode == "overhead":
-        draw_overheadplot()
-    elif mode == "radar":
-        draw_radarplot(angle)
-    elif mode == "multi":
-        draw_multiviewplot()   
-    pygame.display.update() #update screen needs to be outside loop or will only update on click             
-
-   

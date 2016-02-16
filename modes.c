@@ -349,9 +349,9 @@ void sensor_changer(int* selector_value, char* previous_key){
     char b = read_keypad(33);
     if (b == '1' && *previous_key != b){
         clear_display(59);
-        char port[1];
-        sprintf(port, "%i", *selector_value);
-        write_usb_serial_blocking(port, 1);
+        //char port[1];
+        //sprintf(port, "%i", *selector_value);
+        //write_usb_serial_blocking(port, 1);
         *previous_key = b;
         if (*selector_value == 0){
                 *selector_value = 1;
@@ -598,9 +598,6 @@ void TIMER0_IRQHandler(void){
         ir_dist = distanceircalc(); + calibration_adjust;
         angle_arr[array_counter] = ((count-8) * 9);
         time_arr[array_counter] = RTC_GetTime((LPC_RTC_TypeDef *) LPC_RTC, RTC_TIMETYPE_SECOND);
-        char port[60] = "";
-        sprintf(port, ";%i;%i;%i;%i;%i;%i;%i;%i;%i;\n\r", ir_raw, us_raw, ir_dist, us_dist, servoangle, servo_stop, servo_start, act_val, sweep_num);
-        write_usb_serial_blocking(port ,60);
     }
     TIM_ResetCounter(LPC_TIM0);
 }
