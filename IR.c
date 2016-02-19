@@ -50,9 +50,7 @@ int distanceircalc(void){
     else if (1500<= x && x <= 1550){
             x = 20;
         }
-    else if (1450<= x && x <= 1500){
-        x = 20;
-        }
+
 
     //x = get_data_and_print();
 

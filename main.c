@@ -14,7 +14,7 @@ char a;
 char previous;
 
 int main(void){
-    serial_init();
+    serial_init();  
     rtc_init();
     pwm_init();
     adc_init();
@@ -31,9 +31,12 @@ int main(void){
     SYSTICK_IntCmd(DISABLE);
     calibration_mode(previous);
     while(1){
+        int anglemax = ((servo_stop-8)*9);
+        int anglemin = ((servo_start-8)*9);
+        int angle = ((servoangle-8)*9);
         char port[60] = "";
-        sprintf(port, ";%i;%i;%i;%i;%i;%i;%i;%i;%i;\n\r", ir_raw, us_raw, ir_dist, us_dist, servoangle, ((servo_stop - 8) *9), ((servo_start - 8) *9), act_val, sweep_num);
-        write_usb_serial_blocking(port ,60);
+        sprintf(port, ";%i;%i;%i;%i;%i;%i;%i;%i;%i;\n\r", ir_raw, us_raw, ir_dist, us_dist, angle, anglemax, anglemin, act_val, sweep_num);
+        //write_usb_serial_blocking(port ,60);
         a = read_keypad(33);
         switch(mode){
             case 0: mode = calibration_mode(previous); break;
