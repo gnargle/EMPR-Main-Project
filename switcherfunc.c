@@ -2,6 +2,11 @@
 //                  IR/US SENSOR SWITCHER                   //
 //////////////////////////////////////////////////////////////
 
+/*
+Both these functions change the sensor values displayed on the lcd screen using the keypad.
+Fairly self explanatory, very similar to the keypad_change functions in keypad.c
+*/
+
 void sensor_changer(int* selector_value, char* previous_key){
     char b = read_keypad(33);
     if (b == '1' && *previous_key != b){

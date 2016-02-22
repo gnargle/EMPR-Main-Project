@@ -1,6 +1,5 @@
 #include "modes.c"
 
-//NOBODY TOUCH MY INCLUDES THEY ARE DELICATE
 #define usedi2c LPC_I2C1
 #define i2cfunc 3
 #define i2cport 0
@@ -14,6 +13,7 @@ char a;
 char previous;
 
 int main(void){
+    //Initialisation of all hardware in the system.
     serial_init();  
     rtc_init();
     pwm_init();
@@ -30,11 +30,13 @@ int main(void){
     keypad_init(33);
     SYSTICK_IntCmd(DISABLE);
     calibration_mode(previous);
+    //main loop
     while(1){
         int anglemax = ((servo_stop-8)*9);
         int anglemin = ((servo_start-8)*9);
         int angle = ((servoangle-8)*9);
         char port[60] = "";
+        //output for graph
         sprintf(port, ";%i;%i;%i;%i;%i;%i;%i;%i;%i;\n\r", ir_raw, us_raw, ir_dist, us_dist, angle, anglemax, anglemin, act_val, sweep_num);
         //write_usb_serial_blocking(port ,60);
         a = read_keypad(33);
@@ -44,8 +46,10 @@ int main(void){
             case 2: mode = scan_mode(previous); break;
             case 3: mode = multi_view_mode(previous); break;
         }
+        //update arrays for average coalculation
         ir_dist_arr[array_counter] = ir_dist;
         ir_raw_arr[array_counter] = ir_raw;
+        //sanity check for US before array assignment
         if (us_dist > 0 && us_dist < 500){
                 us_dist_arr[array_counter] = us_dist;
         }

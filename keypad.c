@@ -16,7 +16,7 @@ void keypad_init(int i2c_port){
 }
 
 void write_keyboard_pin(uint8_t pin, int i2c_port){
-    //determines key pressed (???)
+    //determines key pressed on a row determined by pin
     if (pin == 0){
         int buff[1] = {0xEF};
         I2C_M_SETUP_Type TransferCfg;
@@ -44,7 +44,8 @@ void write_keyboard_pin(uint8_t pin, int i2c_port){
 }
 
 unsigned char read_keypad_main(int i2c_port){
-    //Main function that reads from the keypad by calling "write keyboard_pin" and then... (???)
+    //Main function that reads from the keypad by iterating through  and writing to pins on the keypad
+    // and then reading from them to see if a key is pressed.
     uint8_t i;
     for (i = 0; i < 4; i++){
         keypad_init(i2c_port);
@@ -99,6 +100,9 @@ char determine_key_pressed(unsigned char retint){
 }
 
 char keypad_check(char x, char prev){
+    //checks if the last key pressed is identical to the current keypress.
+    //If it is not, prev is updated with the new key.
+    //If no key is pressed then prev is set to Z.
     if (x == prev){
         return prev = x;
     }
@@ -115,6 +119,9 @@ char keypad_check(char x, char prev){
 }
 
 void keypad_change_servo_speed(int* turn_speed, char input_key, char* previous_key){
+    //switch to change the servo speed on press of * key.
+    //servo will increase in speed on each press until the loop
+    //the values are how often the servo PWM is updated, lower value, more often it is updated
     if (input_key == '*' && *previous_key != input_key){
         *previous_key = '*';
         switch(*turn_speed){
@@ -129,6 +136,7 @@ void keypad_change_servo_speed(int* turn_speed, char input_key, char* previous_k
 }
 
 void keypad_change_servo_start_pos(int* min_pos_num, char input_key, char* previous_key){
+    //changes minimum count value to change the minimum possible angle.
     if (input_key == '0' && *previous_key != input_key){
         *previous_key = '0';
         switch(*min_pos_num){
@@ -142,6 +150,7 @@ void keypad_change_servo_start_pos(int* min_pos_num, char input_key, char* previ
 }
 
 void keypad_change_servo_stop_pos(int* max_pos_num, char input_key, char* previous_key){
+    //changes maximum count value to change the maximum possible angle.
     if (input_key == '#' && *previous_key != input_key){
         *previous_key = '#';
         switch(*max_pos_num){
@@ -155,6 +164,8 @@ void keypad_change_servo_stop_pos(int* max_pos_num, char input_key, char* previo
 }
 
 void keypad_change_sample_rate(int* sample_rate, char input_key, char* previous_key){
+    //changes sample rate of sensors. These values are how often the timer that controls them fires its interrupt
+    //so the higher the value, the less often it fires.
     if (input_key == '8' && *previous_key != input_key){
         *previous_key = '8';
         switch(*sample_rate){

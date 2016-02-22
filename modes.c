@@ -27,6 +27,13 @@ void servoreset(void);
 //                  MAIN MODES                              //
 //////////////////////////////////////////////////////////////
 
+/*
+These are the four modes used by the system - calibration, tape measure, scan and multiview.
+Calibration mode takes three reference readings from the keypad, compares them to the values it gets from the US and IR.
+After getting all three values for both, it averages them and sets ir_calib_adjust and us_calib_adjust to the averaged values.
+After this, calibration mode functions identically to tape measure mode.
+*/
+
 int calibration_mode(char previous){
     sensor_changer(&sensor_selector, &previous);
     count = 18;
@@ -34,6 +41,11 @@ int calibration_mode(char previous){
     
 
     char a = read_keypad(33);
+    /*
+    Selector to change the mode using the keypad keys A,B,C and D. Replicated in the rest of the modes too.
+    When the system is started for the first time, it starts in calibration mode and requests its values unless one of the
+    B, C or D keys is held at startup.
+    */
     if (a == 'A'&& previous != a){
         SYSTICK_IntCmd(DISABLE);
         char a = read_keypad(33);
@@ -73,6 +85,12 @@ int calibration_mode(char previous){
         int u = 0;
         char write[2];
         strcpy(write, "");
+        /*
+        Code to get values from the keypad. The user places an object at a set distance away from the head, enters how far it is from 
+        the head, then finalises this value with the # key. If a mistake is made, the screen can be cleared with the A key,
+        Then repostions it closer or further and enters the new distance. 
+        This is repeated once more to obtain three different calibration values.
+        */
         while(calib_tracker <3){
             if (u == 1000){
                 sensor_changer_cali_mode(&sensor_selector, &previous);
@@ -139,6 +157,10 @@ int calibration_mode(char previous){
                 u++;
             }
         }
+        /*
+        If the calibration values have been entered, but the calibration is not yet complete, this calculates the calibration adjustments
+        for both IR and US, then sets calibrated_flag to stop them from being recalculated.
+        */
         if (calibrated_flag == 0){
             for (calib_tracker = 0; calib_tracker <3; calib_tracker++){
                 ir_calib_total += ir_calib_arr[calib_tracker];
@@ -179,6 +201,11 @@ int calibration_mode(char previous){
         return 0;
     }
 }
+
+/*
+In tape measure mode, the sensor head points straight ahead and measures values at the sample rate, which can be changed using the 8 key.
+By default these values are shown on screen as IR, but this can be changed to US using the 1 key. This also applies to the rest ofr the modes.
+*/
 
 int tape_measure_mode(char previous){
     sensor_changer(&sensor_selector, &previous);
@@ -228,6 +255,12 @@ int tape_measure_mode(char previous){
     }
 }
 
+/*
+In scan mode, the sensor head rotates from 0 to 180 degrees at a speed specified by the user, using the * key. The 0 and # keys
+can be used to change the position at which the servo starts and stops its rotation, respectively.
+The head still takes readings at its specified sample rate.
+*/
+
 int scan_mode(char previous){
     sensor_changer(&sensor_selector, &previous);
     lcd_display_top_row("Scan");
@@ -276,6 +309,10 @@ int scan_mode(char previous){
         return 2;
     }
 }
+
+/*
+Multi-view mode is very similar to Sscan mode in this C file. Most of the differences are in the accompanying python graph code.
+*/
 
 int multi_view_mode(char previous){
     sensor_changer(&sensor_selector, &previous);
