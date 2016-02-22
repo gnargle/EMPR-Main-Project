@@ -56,7 +56,6 @@ int calibration_mode(char previous){
         return 2;
     }
     else if (a == 'D'&& previous != a){
-        sweep_num = 0;
         servoreset();
         SYSTICK_IntCmd(ENABLE);
         clear_display(59);
@@ -211,7 +210,6 @@ int tape_measure_mode(char previous){
         return 2;
     }
     else if (a == 'D'&& previous != a){
-        sweep_num = 0;
         servoreset();
         SYSTICK_IntCmd(ENABLE);
         clear_display(59);
@@ -257,7 +255,6 @@ int scan_mode(char previous){
         return 2;
     }
     else if (a == 'D'&& previous != a){
-        sweep_num = 0;
         servoreset();
         SYSTICK_IntCmd(ENABLE);
         clear_display(59);
@@ -310,7 +307,6 @@ int multi_view_mode(char previous){
         return 2;
     }
     else if (a == 'D'&& previous != a){
-        sweep_num = 0;
         servoreset();
         SYSTICK_IntCmd(ENABLE);
         char a = read_keypad(33);

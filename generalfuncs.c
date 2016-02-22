@@ -37,6 +37,7 @@ void append(char* s, char c){
 }
 
 void servoreset(void){
+        sweep_num = 0;
         turnspeed = 50;
         turndir = 0;
         systick_count = 0;
