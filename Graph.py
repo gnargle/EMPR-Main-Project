@@ -1,4 +1,3 @@
-
 import pygame #pygame libraries
 from pygame.locals import *
 import serial #getting data from mbed
@@ -9,44 +8,47 @@ import math #maths calculations
 #                    MAIN                    #
 ##############################################
 def Serialdata(mbed):
-	global ir_raw, us_raw, ir, us, max_rot, min_rot, cal_point, sweep_num, line,count, currentline
+	global ir_raw, us_raw, ir, us, max_rot, min_rot, cal_point, sweep_num, line,count, currentline, count, angle
 	#currentline += 1
 	#print "hi"
-	'''if count % 2 == 0:
+	if (count % 2 == 0):
 		mbed.open()
 		x = mbed.readline()
-		x = x.strip()
+		vals = []
 		vals = x.split(';', 10)
-		print vals
-		ir_raw = int(vals[1])
-		us_raw = int(vals[2])
-		ir = int(vals[3])
-		us = int(vals[4])
-		angle = int(vals[5])
-		max_rot = int(vals[6])
-		min_rot = int(vals[7])
-		cal_point = int(vals[8])
-		sweep_num = int(vals[9])
-		nums = vals[1:10]
-		numbers = str(line) + ":"
-		for a in range (9):
-			if a == 8:
-				numbers += nums[a]
-			else:
-				numbers += nums[a] + ":"
-		f = open('data.tmp', 'a')
-		lst = [numbers, "\n"]
-		f.writelines(lst)
-		f.close()
+		vals = vals[1:10]
+		if len(vals) == 9:
+			print vals
+			ir_raw = int(vals[0])
+			us_raw = int(vals[1])
+			ir = int(vals[2])
+			us = int(vals[3])
+			angle = int(vals[4])
+			max_rot = int(vals[5])
+			min_rot = int(vals[6])
+			cal_point = int(vals[7])
+			sweep_num = int(vals[8])
+			nums = vals[1:10]
+			numbers = str(line) + ":"
+			for a in range (8):
+				if a == 8:
+					numbers += nums[a]
+				else:
+					numbers += nums[a] + ":"
+			f = open('data.tmp', 'a')
+			lst = [numbers, "\n"]
+			f.writelines(lst)
+			f.close()
+			line += 1	
 		mbed.close()
-		line += 1	
 	else:
 		pass
-	count += 1 '''
+	count += 1		
+		
 def main():
 	global mode, ir, angle, sweep_num,tick
-	'''if os.path.exists("data.tmp") == True:
-		os.remove("data.tmp")'''
+	if os.path.exists("data.tmp") == True:
+		os.remove("data.tmp")
 	mbed = serial.Serial()
 	mbed.port = "/dev/ttyACM0"
 	mbed.bytesize = serial.EIGHTBITS
@@ -55,7 +57,7 @@ def main():
 	done = False
 	while not done:
 		Serialdata(mbed)
-		readfile()
+		#readfile()
 		key = pygame.key.get_pressed()
 		for event in pygame.event.get():
 			if event.type == QUIT or key[K_ESCAPE]:
@@ -172,7 +174,7 @@ def draw_overheadplot(): #overhead plot
 		elif previousmode == "ir":
 			pointlist = []
 			a = 0
-		z = us * 2 
+		z = us * 4 
 		display_rawus()
 		previousmode = "us" 
 	elif sensor == "ir":
@@ -181,7 +183,7 @@ def draw_overheadplot(): #overhead plot
 		elif previousmode == "us":
 			pointlist = []
 			a = 0
-		z = ir * 2
+		z = ir * 4
 		display_rawir()
 		previousmode = "ir" 
 	x = 50
@@ -289,7 +291,7 @@ def draw_radarplot(): #radar mode
 	elif radarangle >= 360:
 		radarangle = 180        
 	radarangle = angle + 180
-	if len(rpointlist) >= 35:
+	if len(rpointlist) >= 300:
 		rpointlist.pop(0) #if list is full on graph it shifts it along 1
 		p = plotoncircle(400,400,distance,radarangle)
 		rpointlist.append(p) #do
@@ -319,10 +321,10 @@ def draw_multiviewplot(): #multiview mode '''maybe plot all the sweeps at the sa
 	global mode, sensor, ir, us, us_raw, ir_raw, max_rot, min_rot, sweep_num, angle, p0, p1, p2, p3
 	screen.fill([0,0,0]) #clear point list
 	if sensor == "ir":
-		distance = ir
+		distance = ir * 2
 		display_rawir()
 	elif sensor == "us":
-		distance = us
+		distance = us * 2
 		display_rawus()
 	multiangle = angle
 	pygame.display.set_caption("Multiview Mode")
@@ -345,7 +347,7 @@ def draw_multiviewplot(): #multiview mode '''maybe plot all the sweeps at the sa
 		x = 400 + (distance * math.cos(multiangle)) #trig on the point
 		y = 200 - (distance * math.sin(multiangle))
 		plot_point(x,y)
-		if len(p0) >= 20:
+		if len(p0) >= 200:
 			p0.pop(0) #if list is full on graph it shifts it along 1
 			p0.append([x,y]) #do
 		else:
@@ -367,7 +369,7 @@ def draw_multiviewplot(): #multiview mode '''maybe plot all the sweeps at the sa
 		x = 400 - (distance * math.cos(multiangle)) #trig on the point
 		y = 200 + (distance * math.sin(multiangle))
 		p1plot_point(x,y)
-		if len(p1) >= 20:
+		if len(p1) >= 200:
 			p1.pop(0) #if list is full on graph it shifts it along 1
 			p1.append([x,y]) #do
 		else:
@@ -395,7 +397,7 @@ def draw_multiviewplot(): #multiview mode '''maybe plot all the sweeps at the sa
 		x = 400 + (distance * math.cos(multiangle)) #trig on the point
 		y = 200 + (distance * math.sin(multiangle))
 		p2plot_point(x,y)
-		if len(p2) >= 20:
+		if len(p2) >= 200:
 			p2.pop(0) #if list is full on graph it shifts it along 1
 			p2.append([x,y]) #do
 		else:
@@ -431,7 +433,7 @@ def draw_multiviewplot(): #multiview mode '''maybe plot all the sweeps at the sa
 		x = 400 + (distance * math.cos(multiangle)) #trig on the point
 		y = 200 - (distance * math.sin(multiangle))
 		p3plot_point(x,y) 
-		if len(p3) >= 20:
+		if len(p3) >= 200:
 			p3.pop(0) #if list is full on graph it shifts it along 1
 			p3.append([x,y]) #do
 		else:
@@ -596,7 +598,7 @@ pygame.mouse.set_visible(1) #enables use of mouse
 calpoints = []
 previousmode = "ir"
 lastdist = 0
-tick = 7
+tick = 60
 currentline = 0
 
 def readfile(): #need to read from certain line

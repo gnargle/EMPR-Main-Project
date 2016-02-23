@@ -131,15 +131,15 @@ int calibration_mode(char previous){
                         ir_reported = ir_dist;
                         char port[3] = "";
                         sprintf(port, "%i", ir_reported);
-                        write_usb_serial_blocking("ir_report: ", 11);
-                        write_usb_serial_blocking(port, 3);
-                        write_usb_serial_blocking("\n\r", 2); 
+                        //write_usb_serial_blocking("ir_report: ", 11);
+                        //write_usb_serial_blocking(port, 3);
+                        //write_usb_serial_blocking("\n\r", 2); 
                         us_reported = us_dist;
                         char port1[3] = "";
                         sprintf(port1, "%i", us_reported);
-                        write_usb_serial_blocking("us_report: ", 11);
-                        write_usb_serial_blocking(port1, 3);
-                        write_usb_serial_blocking("\n\r", 2); 
+                        //write_usb_serial_blocking("us_report: ", 11);
+                        //write_usb_serial_blocking(port1, 3);
+                        //write_usb_serial_blocking("\n\r", 2); 
                         ir_calib_val = (act_val - ir_reported);
                         us_calib_val = (act_val - us_reported);
                         ir_calib_arr[calib_tracker] = ir_calib_val;
@@ -171,24 +171,24 @@ int calibration_mode(char previous){
             us_calibration_adjust = us_calib_total/3;
             char port1[3] = "";
             sprintf(port1, "%i", ir_calib_total);
-            write_usb_serial_blocking("IR total: ", 8);
+            /*write_usb_serial_blocking("IR total: ", 8);
             write_usb_serial_blocking(port1, 3);
-            write_usb_serial_blocking("\n\r", 2);
+            write_usb_serial_blocking("\n\r", 2);*/
             char port2[3] = "";
             sprintf(port2, "%i", us_calib_total);
-            write_usb_serial_blocking("US total: ", 8);
+            /*write_usb_serial_blocking("US total: ", 8);
             write_usb_serial_blocking(port2, 3);
-            write_usb_serial_blocking("\n\r", 2);
+            write_usb_serial_blocking("\n\r", 2);*/
             char port3[3] = "";
             sprintf(port3, "%i", ir_calibration_adjust);
-            write_usb_serial_blocking("IR adjust: ", 9);
+            /*write_usb_serial_blocking("IR adjust: ", 9);
             write_usb_serial_blocking(port3, 3);
-            write_usb_serial_blocking("\n\r", 2);
+            write_usb_serial_blocking("\n\r", 2);*/
             char port4[3] = "";
             sprintf(port4, "%i", us_calibration_adjust);
-            write_usb_serial_blocking("US adjust: ", 9);
+            /*write_usb_serial_blocking("US adjust: ", 9);
             write_usb_serial_blocking(port4, 3);
-            write_usb_serial_blocking("\n\r", 2);
+            write_usb_serial_blocking("\n\r", 2);*/
         }
 
         lcd_display_top_row("Cali");
