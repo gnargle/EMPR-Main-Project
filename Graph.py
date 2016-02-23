@@ -4,7 +4,6 @@ from pygame.locals import *
 import serial #getting data from mbed
 import sys,os #exiting graph
 import math #maths calculations
-import numpy
 
 ##############################################
 #                    MAIN                    #
@@ -102,7 +101,7 @@ def draw_tapemeasureplot():  #tape measure mode
 		s = pygame.Surface((700,300))
 	else:
 		s = pygame.Surface((distance,300))    
-	s.fill((0,0,255))
+	s.fill((50,50,200))
 	screen.blit(s,(50,50))
 	'''if z == 1:
 		if distance <= 0: #draws graph grid to screen
@@ -546,14 +545,20 @@ def draw_lines(lines): #draw overheadlines
 def display_rawir():
 	global datafont, ir_raw
 	raw_ir = "RAW IR: " + str(ir_raw)
+	irdis = "IR: " + str(ir)
 	data = font.render(raw_ir, True, (255,255,255))
-	screen.blit(data, (345,3))
+	screen.blit(data, (250,3))
+	data = font.render(irdis, True, (255,255,255))
+	screen.blit(data, (450,3))
 
 def display_rawus():	
 	global datafont, us_raw
 	raw_us = "RAW US: " + str(us_raw)
+	usdis = "US: " + str(us)
 	data = font.render(raw_us, True, (255,255,255))
-	screen.blit(data, (345,3))
+	screen.blit(data, (250,3))
+	data = font.render(usdis, True, (255,255,255))
+	screen.blit(data, (450,3))
 
 ##############################################
 #                  GLOBALS                   #
