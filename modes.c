@@ -126,6 +126,8 @@ int calibration_mode(char previous){
                         previous = x;
                     }
                     else if(x == '#'){
+                        char port[60] = "";
+                        sprintf(port, ";%i;%i;%i;%i;%i;%i;%i;%i;%i;\n\r", ir_raw, us_raw, ir_dist, us_dist, angle, anglemax, anglemin, act_val, sweep_num);
                         clear_display(59);
                         int act_val = atoi(write);  
                         ir_reported = ir_dist;
