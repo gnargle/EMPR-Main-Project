@@ -126,10 +126,14 @@ int calibration_mode(char previous){
                         previous = x;
                     }
                     else if(x == '#'){
-                        char port[60] = "";
-                        sprintf(port, ";%i;%i;%i;%i;%i;%i;%i;%i;%i;\n\r", ir_raw, us_raw, ir_dist, us_dist, angle, anglemax, anglemin, act_val, sweep_num);
                         clear_display(59);
                         int act_val = atoi(write);  
+			int anglemax = ((servo_stop-8)*9);
+        		int anglemin = ((servo_start-8)*9);
+        		int angle = ((count-8)*9);
+                        char port3[60] = "";
+                        sprintf(port3, ";%i;%i;%i;%i;%i;%i;%i;%i;%i;\n\r", ir_raw, us_raw, ir_dist, us_dist, angle, anglemax, anglemin, act_val, sweep_num);
+			write_usb_serial_blocking(port3 ,60);
                         ir_reported = ir_dist;
                         char port[3] = "";
                         sprintf(port, "%i", ir_reported);
