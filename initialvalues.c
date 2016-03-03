@@ -22,7 +22,7 @@ int ir_calib_total = 0;
 int calibrated_flag = 0;
 int act_val;
 int servoangle;
-int sweep_num = 0;
+float sweep_num = 0;
 
 int time_arr[100];
 int angle_arr[100];

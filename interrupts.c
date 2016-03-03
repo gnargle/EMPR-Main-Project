@@ -22,6 +22,7 @@ void SysTick_Handler(void){
             if (count >=servo_stop){
                 //avgdistance = (sum / 20);
                 turndir = 1;
+                sweep_num += 0.5;
             }
         }
     }
@@ -37,8 +38,8 @@ void SysTick_Handler(void){
             if (count <=servo_start){
                 //avgdistance = (sum / 20);
                 turndir = 0;
-                sweep_num += 1;
-                if (sweep_num > 3){sweep_num = 0;}
+                sweep_num += 0.5;
+                if (sweep_num > 3.5){sweep_num = 0;}
             }
         }
     }

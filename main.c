@@ -37,7 +37,7 @@ int main(void){
         int angle = ((count-8)*9);
         char port[60] = "";
         //output for graph
-        sprintf(port, ";%i;%i;%i;%i;%i;%i;%i;%i;%i;\n\r", ir_raw, us_raw, ir_dist, us_dist, angle, anglemax, anglemin, act_val, sweep_num);
+        sprintf(port, ";%i;%i;%i;%i;%i;%i;%i;%i;%f;\n\r", ir_raw, us_raw, ir_dist, us_dist, angle, anglemax, anglemin, act_val, sweep_num);
         write_usb_serial_blocking(port ,60);
         a = read_keypad(33);
         switch(mode){
