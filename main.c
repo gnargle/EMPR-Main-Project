@@ -5,7 +5,7 @@
 #define i2cport 0
 #define i2cpin1 0
 #define i2cpin2 1
-
+//
 int count2 = 0;
 int mode;
 mode = 0;
@@ -30,15 +30,15 @@ int main(void){
     keypad_init(33);
     SYSTICK_IntCmd(DISABLE);
     calibration_mode(previous);
-    //main loop
+    //main loop//
     while(1){
         int anglemax = ((servo_stop-8)*9);
         int anglemin = ((servo_start-8)*9);
         int angle = ((count-8)*9);
-        char port[60] = "";
+        char port[70] = "";
         //output for graph
-        sprintf(port, ";%i;%i;%i;%i;%i;%i;%i;%i;%f;\n\r", ir_raw, us_raw, ir_dist, us_dist, angle, anglemax, anglemin, act_val, sweep_num);
-        write_usb_serial_blocking(port ,60);
+        sprintf(port, ";%i;%i;%i;%i;%i;%i;%i;%i;%i;%i\n\r", ir_raw, us_raw, ir_dist, us_dist, angle, anglemax, anglemin, act_val, sweep_num, multicheck);
+        write_usb_serial_blocking(port ,70);
         a = read_keypad(33);
         switch(mode){
             case 0: mode = calibration_mode(previous); break;

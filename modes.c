@@ -132,7 +132,7 @@ int calibration_mode(char previous){
         		int anglemin = ((servo_start-8)*9);
         		int angle = ((count-8)*9);
                         char port3[60] = "";
-                        sprintf(port3, ";%i;%i;%i;%i;%i;%i;%i;%i;%f;\n\r", ir_raw, us_raw, ir_dist, us_dist, angle, anglemax, anglemin, act_val, sweep_num);
+                        sprintf(port3, ";%i;%i;%i;%i;%i;%i;%i;%i;%d;\n\r", ir_raw, us_raw, ir_dist, us_dist, angle, anglemax, anglemin, act_val, sweep_num);
 			write_usb_serial_blocking(port3 ,60);
                         ir_reported = ir_dist;
                         char port[3] = "";

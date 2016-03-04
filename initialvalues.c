@@ -22,7 +22,7 @@ int ir_calib_total = 0;
 int calibrated_flag = 0;
 int act_val;
 int servoangle;
-float sweep_num = 0;
+int sweep_num = 0;
 
 int time_arr[100];
 int angle_arr[100];
@@ -37,3 +37,5 @@ int samplerate = 2500;
 int num = 0;
 float x = 0;
 float y = 0;
+
+int multicheck = 0;
