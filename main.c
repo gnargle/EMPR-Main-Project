@@ -7,8 +7,7 @@
 #define i2cpin2 1
 //
 int count2 = 0;
-int mode;
-mode = 0;
+int mode = 0;
 char a;
 char previous;
 

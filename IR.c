@@ -7,7 +7,7 @@ char s[3] = "< 7";
 int distanceircalc(void){
     int x; 
     x = get_data();
-    if (x <= 1450 && x > 0){
+    if (x <= 700 && x > 0){
             x = (((5461/(get_data()-17))-2)*10);
         //x = get_data_and_print();
         }
@@ -47,9 +47,28 @@ int distanceircalc(void){
     else if (1550<= x && x <= 1600){
             x = 19;
         }
-    else if (1500<= x && x <= 1550){
+    else if (1200<= x && x <= 1550){
             x = 20;
         }
+    else if (1000<= x && x <= 1200){
+            x = 25;
+        }
+    else if (950<= x && x <= 1000){
+            x = 30;
+        }
+    else if (850<= x && x <= 950){
+            x = 35;
+        }
+    else if (800<= x && x <= 850){
+            x = 40;
+        }
+    else if (750<= x && x <= 800){
+            x = 45;
+        }
+    else if (700<= x && x <= 750){
+            x = 50;
+        }
+
 
 
     //x = get_data_and_print();
