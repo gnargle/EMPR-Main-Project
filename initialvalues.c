@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////
 //                      INITIAL VALUES                      //
 //////////////////////////////////////////////////////////////
-
+int mode = 0;
 int systick_count = 0;
 int count = 8;
 int turndir = 0;
@@ -39,3 +39,4 @@ float x = 0;
 float y = 0;
 
 int multicheck = 0;
+int newmulti = 0;

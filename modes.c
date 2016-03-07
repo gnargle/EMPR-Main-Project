@@ -131,9 +131,9 @@ int calibration_mode(char previous){
 			int anglemax = ((servo_stop-8)*9);
         		int anglemin = ((servo_start-8)*9);
         		int angle = ((count-8)*9);
-                        char port3[60] = "";
-                        sprintf(port3, ";%i;%i;%i;%i;%i;%i;%i;%i;%d;\n\r", ir_raw, us_raw, ir_dist, us_dist, angle, anglemax, anglemin, act_val, sweep_num);
-			write_usb_serial_blocking(port3 ,60);
+                        char port3[90] = "";
+                        sprintf(port3, ";%i;%i;%i;%i;%i;%i;%i;%i;%i;%i;%i;%i;\n\r", ir_raw, us_raw, ir_dist, us_dist, angle, anglemax, anglemin, act_val, sweep_num, multicheck, mode, newmulti);
+	                    write_usb_serial_blocking(port3 ,90);
                         ir_reported = ir_dist;
                         char port[3] = "";
                         sprintf(port, "%i", ir_reported);
@@ -361,6 +361,7 @@ int multi_view_mode(char previous){
         keypad_change_servo_start_pos(&servo_start, a, &previous);
         keypad_change_servo_stop_pos(&servo_stop, a, &previous);
         keypad_change_sample_rate(&samplerate, a, &previous);
+        keypad_activate_interrupt(a, &previous);
         average_calculator(us_dist_arr, ir_dist_arr, array_counter, &us_avg, &ir_avg);
         previous = keypad_check(a, previous);
         

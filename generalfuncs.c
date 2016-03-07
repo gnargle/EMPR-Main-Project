@@ -43,6 +43,7 @@ void servoreset(void){
     //When the mode is changed to scan or multiview, the servo needs to be reset to its start point.
     //This function ensures that occurs.
         sweep_num = 0;
+        multicheck = 0;
         turnspeed = 50;
         turndir = 0;
         systick_count = 0;

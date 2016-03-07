@@ -7,7 +7,7 @@
 #define i2cpin2 1
 //
 int count2 = 0;
-int mode = 0;
+//int mode = 0;
 char a;
 char previous;
 
@@ -34,10 +34,10 @@ int main(void){
         int anglemax = ((servo_stop-8)*9);
         int anglemin = ((servo_start-8)*9);
         int angle = ((count-8)*9);
-        char port[70] = "";
-        //output for graph
-        sprintf(port, ";%i;%i;%i;%i;%i;%i;%i;%i;%i;%i\n\r", ir_raw, us_raw, ir_dist, us_dist, angle, anglemax, anglemin, act_val, sweep_num, multicheck);
-        write_usb_serial_blocking(port ,70);
+        char port[90] = "";
+        ////output for graph
+        sprintf(port, ";%i;%i;%i;%i;%i;%i;%i;%i;%i;%i;%i;%i;\n\r", ir_raw, us_raw, ir_dist, us_dist, angle, anglemax, anglemin, act_val, sweep_num, multicheck, mode, newmulti);
+        write_usb_serial_blocking(port ,90);
         a = read_keypad(33);
         switch(mode){
             case 0: mode = calibration_mode(previous); break;

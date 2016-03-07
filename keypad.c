@@ -179,3 +179,15 @@ void keypad_change_sample_rate(int* sample_rate, char input_key, char* previous_
     }
     else return;
 }
+
+void keypad_activate_interrupt(char input_key, char* previous_key){
+    //changes maximum count value to change the maximum possible angle.
+    if (input_key == '3' && *previous_key != input_key){
+        *previous_key = '3';
+        SYSTICK_IntCmd(ENABLE);
+        newmulti = 1;
+    }
+    else {
+        newmulti = 0;
+        return;}
+}

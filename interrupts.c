@@ -43,6 +43,9 @@ void SysTick_Handler(void){
                 if (sweep_num > 3.5){
                         sweep_num = 0; 
                         multicheck = 0;
+                        if (mode == 3){
+                            SYSTICK_IntCmd(DISABLE);
+                        }
                 }
             }
         }
