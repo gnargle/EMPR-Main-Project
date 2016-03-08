@@ -9,7 +9,7 @@ import numpy
 #                    MAIN                    #
 ##############################################
 def Serialdata(mbed):
-	global ir_raw, us_raw, ir, us, max_rot, min_rot, cal_point, sweep_num, checker, line, currentline, count, angle, modecheck
+	global ir_raw, us_raw, ir, us, max_rot, min_rot, cal_point, sweep_num, checker, line, currentline, count, angle, modecheck, newmulti
 	mbed.open()
 	x = mbed.readline()
 	vals = []
@@ -18,28 +18,27 @@ def Serialdata(mbed):
 	print vals
 	if len(vals) == 12:
 		for val in vals:
-			if val == '' or val == None or val == "\x00":
+			if val == '' or val == None or val == "\x00" or val == "\xff":
 				val = 0
-			else:	
-				ir_raw = int(vals[0])
-				us_raw = int(vals[1])
-				ir = int(vals[2])
-				us = int(vals[3])
-				angle = int(vals[4])
-				max_rot = int(vals[5])
-				min_rot = int(vals[6])
-				cal_point = int(vals[7])
-				sweep_num = int(vals[8])
-				if vals[9] == '\n':
-					checker = 0
-				else:	
-					checker = int(vals[9])
-				if vals[10] == '\n':
-					modecheck = 0
-				else:
-					modecheck = int(vals[10])
-				line += 1	
-				newmulti = int(vals[11])
+		ir_raw = int(vals[0])
+		us_raw = int(vals[1])
+		ir = int(vals[2])
+		us = int(vals[3])
+		angle = int(vals[4])
+		max_rot = int(vals[5])
+		min_rot = int(vals[6])
+		cal_point = int(vals[7])
+		sweep_num = int(vals[8])
+		if vals[9] == '\n':
+			checker = 0
+		else:	
+			checker = int(vals[9])
+		if vals[10] == '\n':
+			modecheck = 0
+		else:
+			modecheck = int(vals[10])
+		line += 1	
+		newmulti = int(vals[11])
 	mbed.close()
  
 def main():
@@ -85,7 +84,7 @@ def main():
 #                TAPEMEASURE                 #
 ##############################################
 def draw_tapemeasureplot():  #tape measure mode 
-	global font,us_raw, ir_raw, ir, us, screen, cal_point,calpoints, previous
+	global font,us_raw, ir_raw, ir, us, screen, cal_point,calpoints, previous, ccount, modecheck
 	screen.fill([0,0,0])
 	if previous == "tape":
 		pass
@@ -119,15 +118,15 @@ def draw_tapemeasureplot():  #tape measure mode
 	screen.blit(s,(50,50))
 	q = 110
 	y = 10
-	if len(calpoints) == 3:
-		calpoints.pop(0)
-	calpoints.append([point,step])
+	if point != 0:	
+		calpoints.append([point,step])
 	for val in calpoints:
 		set_calibrationpoints(val[0],val[1])
 	numbers = font.render(str(0), True, colour)
 	screen.blit(numbers, (45,25))
 	numbers = font.render(str(100), True, colour)
 	screen.blit(numbers, (725,25))
+	ccount += 1
 
 	for x in range(9):
 		numbers = font.render(str(y), True, colour)
@@ -270,7 +269,7 @@ def draw_radarplot(): #radar mode
 			pass
 		elif previousmode == "us":
 			rpointlist = []
-		distance = ir * 2
+		distance = ir * 3
 		display_rawir()
 		previousmode = "ir"
 	elif sensor == "us":
@@ -278,7 +277,7 @@ def draw_radarplot(): #radar mode
 			pass
 		elif previousmode == "ir":
 			rpointlist = []
-		distance = us * 2
+		distance = us * 3
 		display_rawus()
 		previousmode = "us"    
 	z = 10
@@ -349,6 +348,7 @@ def draw_multiviewplot(): #multiview mode '''maybe plot all the sweeps at the sa
 	pygame.display.set_caption("Multiview Mode")
 	pygame.draw.line(screen, (0,51,102), (400,40), (400,360),3)
 	pygame.draw.line(screen, (0,51,102), (560,200), (240,200),3)
+	pygame.draw.circle(screen, (0,128,255), (400, 200), 170, 1)
 	pygame.draw.circle(screen, (0,128,255), (400, 200), 150, 2)
 	pygame.draw.circle(screen, (0,128,255), (400, 200), 125, 1)
 	pygame.draw.circle(screen, (0,128,255), (400, 200), 100, 2)
@@ -399,7 +399,10 @@ def draw_multiviewplot(): #multiview mode '''maybe plot all the sweeps at the sa
 def cutoff():
 	global angle, checker, distance, ir, us, limit
 
-	distance = (ir + us /2.0) * 3
+	if (ir < 10):
+		distance = us * 2
+	else:
+		distance = ((ir + us)/2.0) * 2
 
 	if distance > limit:
 		distance = limit
@@ -422,6 +425,7 @@ def flip():
 	multi_buttons()
 	pygame.draw.line(screen, (0,51,102), (400,40), (400,360),3)
 	pygame.draw.line(screen, (0,51,102), (560,200), (240,200),3)
+	pygame.draw.circle(screen, (0,128,255), (400, 200), 170, 1)
 	pygame.draw.circle(screen, (0,128,255), (400, 200), 150, 2)
 	pygame.draw.circle(screen, (0,128,255), (400, 200), 125, 1)
 	pygame.draw.circle(screen, (0,128,255), (400, 200), 100, 2)
@@ -544,6 +548,7 @@ def transform():
 	multi_buttons()
 	pygame.draw.line(screen, (0,51,102), (400,40), (400,360),3)
 	pygame.draw.line(screen, (0,51,102), (560,200), (240,200),3)
+	pygame.draw.circle(screen, (0,128,255), (400, 200), 170, 1)
 	pygame.draw.circle(screen, (0,128,255), (400, 200), 150, 2)
 	pygame.draw.circle(screen, (0,128,255), (400, 200), 125, 1)
 	pygame.draw.circle(screen, (0,128,255), (400, 200), 100, 2)
@@ -1226,19 +1231,26 @@ def store(distanceavg, angle, checker):
 
 def testmode():
 	global distance, quad1, quad2, quad3, quad4, scan1, scan2, scan3, scan4, angle, checker, count, status
+	mbed = serial.Serial()
+	mbed.port = "/dev/ttyACM0"
+	mbed.bytesize = serial.EIGHTBITS
+	mbed.parity = serial.PARITY_NONE
+	mbed.stopbits = serial.STOPBITS_ONE
 	screen.fill([0,0,0])
 	cutoff()
-	if (checker == 7) and (angle == 9):
+	if (checker == 7) and (angle == 9) or (checker == 7) and (angle == 0):
 		flip()
 		transform()
 		while newmulti != 1:
-			pass
+			Serialdata(mbed)	
 		cleararray()
 		screen.fill([0,0,0])
 		return
+	
+				
 
 def cleararray():
-	global quad1, quad2, quad3, quad4, scan1, scan2, scan3, scan4
+	global quad1, quad2, quad3, quad4, scan1, scan2, scan3, scan4, p0, p1, p2, p3
 	quad1 = []
 	quad2 = []
 	quad3 = []
@@ -1247,6 +1259,10 @@ def cleararray():
 	scan2 = []
 	scan3 = []
 	scan4 = []
+	p0 = []
+	p1 = []
+	p2 = []
+	p3 = []
 
 def multi_buttons(): #check poisiton values so in middle of boxes
 	global mode,buttonfont, datafont, ir_raw, us_raw, ir, us
@@ -1393,6 +1409,7 @@ calpoints = []
 previousmode = "ir"
 lastdist = 0
 lastsweep = 0
+ccount = 0
 minimum1 = 1000
 minimum2 = 1000
 minimum3 = 1000
